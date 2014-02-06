@@ -13,6 +13,7 @@
 #include <set>
 #include <iostream>
 //#include <boost/tr1/unordered_map.hpp>
+#include <unordered_map>
 
 #include <libdfsutil/debug.h>
 #include <libdfsutil/runtimeexception.h>

@@ -14,7 +14,7 @@
 #include <uuid/uuid.h>
 #endif
 
-#include "tuneables.h"
+#include <libdfs/tuneables.h>
 
 #include <libdfsutil/debug.h>
 

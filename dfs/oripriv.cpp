@@ -79,8 +79,7 @@ void OriFileInfo::loadAttr(const AttrMap &attrs)
     statInfo.st_ctime = attrs.getAs<time_t>(ATTR_CTIME);
 }
 
-void
-OriFileInfo::storeAttr(AttrMap *attrs) const
+void OriFileInfo::storeAttr(AttrMap *attrs) const
 {
     ASSERT(attrs != NULL);
 

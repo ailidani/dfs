@@ -18,7 +18,7 @@
 #error "SHA256 not supported!"
 #endif
 
-#include "tuneables.h"
+#include <libdfs/tuneables.h>
 
 #include <libdfsutil/debug.h>
 #include <libdfsutil/stream.h>

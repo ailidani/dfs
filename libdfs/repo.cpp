@@ -174,8 +174,7 @@ Commit Repo::getCommit(const ObjectHash &commitId)
     return c;
 }
 
-LargeBlob
-Repo::getLargeBlob(const ObjectHash &objId)
+LargeBlob Repo::getLargeBlob(const ObjectHash &objId)
 {
     Object::sp o(getObject(objId));
     string blob = o->getPayload();
@@ -193,8 +192,7 @@ Repo::getLargeBlob(const ObjectHash &objId)
     return lb;
 }
 
-DAG<ObjectHash, Commit>
-Repo::getCommitDag()
+DAG<ObjectHash, Commit> Repo::getCommitDag()
 {
     vector<Commit> commits = listCommits();
     vector<Commit>::iterator it;
