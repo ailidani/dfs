@@ -5,6 +5,7 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../libdfs/commit.cpp \
+../libdfs/evbufstream.cpp \
 ../libdfs/fchunker.cpp \
 ../libdfs/httpclient.cpp \
 ../libdfs/httprepo.cpp \
@@ -15,6 +16,8 @@ CPP_SRCS += \
 ../libdfs/localrepo.cpp \
 ../libdfs/mergestate.cpp \
 ../libdfs/metadatalog.cpp \
+../libdfs/object.cpp \
+../libdfs/packfile.cpp \
 ../libdfs/peer.cpp \
 ../libdfs/remoterepo.cpp \
 ../libdfs/repo.cpp \
@@ -33,6 +36,7 @@ CPP_SRCS += \
 
 OBJS += \
 ./libdfs/commit.o \
+./libdfs/evbufstream.o \
 ./libdfs/fchunker.o \
 ./libdfs/httpclient.o \
 ./libdfs/httprepo.o \
@@ -43,6 +47,8 @@ OBJS += \
 ./libdfs/localrepo.o \
 ./libdfs/mergestate.o \
 ./libdfs/metadatalog.o \
+./libdfs/object.o \
+./libdfs/packfile.o \
 ./libdfs/peer.o \
 ./libdfs/remoterepo.o \
 ./libdfs/repo.o \
@@ -61,6 +67,7 @@ OBJS += \
 
 CPP_DEPS += \
 ./libdfs/commit.d \
+./libdfs/evbufstream.d \
 ./libdfs/fchunker.d \
 ./libdfs/httpclient.d \
 ./libdfs/httprepo.d \
@@ -71,6 +78,8 @@ CPP_DEPS += \
 ./libdfs/localrepo.d \
 ./libdfs/mergestate.d \
 ./libdfs/metadatalog.d \
+./libdfs/object.d \
+./libdfs/packfile.d \
 ./libdfs/peer.d \
 ./libdfs/remoterepo.d \
 ./libdfs/repo.d \
@@ -92,7 +101,7 @@ CPP_DEPS += \
 libdfs/%.o: ../libdfs/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
-	g++ -I/Users/eddieaili/Documents/workspace/dfs -I/opt/local/include -I/usr/local/include/osxfuse -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	g++ -I/Users/eddieaili/Documents/workspace/dfs -I/opt/local/include -I/usr/local/include/osxfuse -O0 -g3 -Wall -c -fmessage-length=0 -std=c++0x -D_FILE_OFFSET_BITS=64 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

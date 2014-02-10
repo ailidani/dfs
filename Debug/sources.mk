@@ -30,4 +30,5 @@ libdfsutil \
 libdfs \
 httpd \
 dfs \
+cmd \
 

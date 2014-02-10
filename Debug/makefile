@@ -15,6 +15,7 @@ RM := rm -rf
 -include libdfs/subdir.mk
 -include httpd/subdir.mk
 -include dfs/subdir.mk
+-include cmd/subdir.mk
 -include subdir.mk
 -include objects.mk
 
@@ -50,7 +51,7 @@ all: dfs
 dfs: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: MacOS X C++ Linker'
-	g++  -o "dfs" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -L/opt/local/lib/ -o "dfs" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

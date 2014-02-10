@@ -4,5 +4,5 @@
 
 USER_OBJS :=
 
-LIBS := -l/opt/local/lib/libevent.a
+LIBS := -levent
 

@@ -4,6 +4,7 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../libdfsutil/dag.cpp \
 ../libdfsutil/debug.cpp \
 ../libdfsutil/dfscrypt.cpp \
 ../libdfsutil/dfsfile.cpp \
@@ -22,9 +23,11 @@ CPP_SRCS += \
 ../libdfsutil/stopwatch.cpp \
 ../libdfsutil/stream.cpp \
 ../libdfsutil/thread_posix.cpp \
+../libdfsutil/uuid.cpp \
 ../libdfsutil/zeroconf.cpp 
 
 OBJS += \
+./libdfsutil/dag.o \
 ./libdfsutil/debug.o \
 ./libdfsutil/dfscrypt.o \
 ./libdfsutil/dfsfile.o \
@@ -43,9 +46,11 @@ OBJS += \
 ./libdfsutil/stopwatch.o \
 ./libdfsutil/stream.o \
 ./libdfsutil/thread_posix.o \
+./libdfsutil/uuid.o \
 ./libdfsutil/zeroconf.o 
 
 CPP_DEPS += \
+./libdfsutil/dag.d \
 ./libdfsutil/debug.d \
 ./libdfsutil/dfscrypt.d \
 ./libdfsutil/dfsfile.d \
@@ -64,6 +69,7 @@ CPP_DEPS += \
 ./libdfsutil/stopwatch.d \
 ./libdfsutil/stream.d \
 ./libdfsutil/thread_posix.d \
+./libdfsutil/uuid.d \
 ./libdfsutil/zeroconf.d 
 
 
@@ -71,7 +77,7 @@ CPP_DEPS += \
 libdfsutil/%.o: ../libdfsutil/%.cpp
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C++ Compiler'
-	g++ -I/Users/eddieaili/Documents/workspace/dfs -I/opt/local/include -I/usr/local/include/osxfuse -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
+	g++ -I/Users/eddieaili/Documents/workspace/dfs -I/opt/local/include -I/usr/local/include/osxfuse -O0 -g3 -Wall -c -fmessage-length=0 -std=c++0x -D_FILE_OFFSET_BITS=64 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 
