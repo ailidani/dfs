@@ -177,7 +177,7 @@ void ori_terminate() {
 #endif /* HAVE_EXECINFO */
 }
 
-int ori_open_log(const string &logPath) {
+int dfs_open_log(const string &logPath) {
     if (logPath == "")
         return -1;
 
