@@ -7,9 +7,9 @@
 
 export ORIG_DIR=`pwd`
 #export PATH=$PATH:$ORIG_DIR/
-export CMD=$ORIG_DIR/cmd
-export HTTPD=$ORIG_DIR/httpd
-export DFS_EXE=$ORIG_DIR/dfs
+export CMD=$ORIG_DIR/bin/cmd
+export HTTPD=$ORIG_DIR/bin/httpd
+export DFS_EXE=$ORIG_DIR/bin/dfs
 # export ORIDBG_EXE=$ORIG_DIR/build/oridbg/oridbg
 # export ORI_TESTS=$ORIG_DIR/ori_tests
 
@@ -65,26 +65,26 @@ echo >> $TEST_RESULTS
 
 # =================================================
 
-cd $TEMP_DIR
+#cd $TEMP_DIR
 
 # newfs
 $CMD newfs $TEST_FS
 
 # mount
-$DFS_EXE $TEST_FS
+$DFS_EXE $TEMP_DIR/$TEST_FS
 
 sleep 1
 
-cd $TEST_FS
+cd $TEMP_DIR/$TEST_FS
 ls > /dev/null
-cd ..
+cd ../../
 
-$UMOUNT $TEST_FS
+$UMOUNT $TEMP_DIR/$TEST_FS
 
 cd ~/.ori/$TEST_FS.ori/
 $ORIDBG_EXE verify
 $ORIDBG_EXE stats
-cd $TEMP_DIR
+cd $ORIG_DIR
 
 # remove
 $CMD removefs $TEST_FS
