@@ -10,7 +10,7 @@ export ORIG_DIR=`pwd`
 export CMD=$ORIG_DIR/bin/cmd
 export HTTPD=$ORIG_DIR/bin/httpd
 export DFS_EXE=$ORIG_DIR/bin/dfs
-# export ORIDBG_EXE=$ORIG_DIR/build/oridbg/oridbg
+#export ORIDBG_EXE=$ORIG_DIR/build/oridbg/oridbg
 # export ORI_TESTS=$ORIG_DIR/ori_tests
 
 # On OS X and other systems this is umount
@@ -65,31 +65,62 @@ echo >> $TEST_RESULTS
 
 # =================================================
 
-#cd $TEMP_DIR
+cd $TEMP_DIR
+cp $ORIG_DIR/libdfs.dylib ./
 
 # newfs
 $CMD newfs $TEST_FS
 
 # mount
-$DFS_EXE $TEMP_DIR/$TEST_FS
+$DFS_EXE $TEST_FS
 
 sleep 1
 
-cd $TEMP_DIR/$TEST_FS
+cd $TEST_FS
 ls > /dev/null
-cd ../../
+cd ../
 
-$UMOUNT $TEMP_DIR/$TEST_FS
+$UMOUNT $TEST_FS
 
 cd ~/.ori/$TEST_FS.ori/
-$ORIDBG_EXE verify
-$ORIDBG_EXE stats
+#$ORIDBG_EXE verify
+#$ORIDBG_EXE stats
 cd $ORIG_DIR
 
 # remove
 $CMD removefs $TEST_FS
 
 # =================================================
+# Clone local 
+
+cd $TEMP_DIR
+$CMD replicate $SOURCE_FS $TEST_FS
+
+$DFS_EXE $SOURCE_FS
+$DFS_EXE $TEST_FS
+
+sleep 1
+
+cd $TEST_FS
+#$PYTHON $SCRIPTS/compare.py "$SOURCE_FS" "$TEST_FS"
+cd ..
+
+$UMOUNT $SOURCE_FS
+$UMOUNT $TEST_FS
+
+cd ~/.ori/$TEST_FS.ori
+#$ORIDBG_EXE verify
+#$ORIDBG_EXE stats
+
+#bash -e $SCRIPTS/verify_refcounts.sh
+
+cd $TEMP_DIR
+$CMD removefs $TEST_FS
+
+
+
+# =================================================
+
 
 
 
