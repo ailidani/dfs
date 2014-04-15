@@ -17,8 +17,9 @@ EXECUTABLE=libs/libdfs.dylib
 all:
 	$(CC) $(INCLUDE) $(CPP_FLAGS) -c $(CPP_SOURCES)
 	$(C) $(INCLUDE) $(C_FLAGS) -c $(C_SOURCES)
-	$(CC) $(LDFLAGS) *.o -dynamiclib -o bin/libdfs.dylib 
+	$(CC) $(LDFLAGS) *.o -dynamiclib -o libdfs.dylib 
 	rm *.o
+	cp libdfs.dylib bin/
 	$(CC) $(LDFLAGS) -L. -ldfs $(INCLUDE) $(CPP_FLAGS) test/test_dfsutil.cpp -o bin/test_dfsutil
 	$(CC) $(LDFLAGS) -L. -ldfs $(INCLUDE) $(CPP_FLAGS) httpd/main.cpp -o bin/httpd
 	$(CC) $(LDFLAGS) -L. -ldfs $(INCLUDE) $(CPP_FLAGS) cmd/*.cpp -o bin/cmd
