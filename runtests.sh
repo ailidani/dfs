@@ -6,9 +6,10 @@
 
 
 export ORIG_DIR=`pwd`
-export CMD=$ORIG_DIR/cmd/cmd
-export HTTPD=$ORIG_DIR/httpd/httpd
-export DFS_EXE=$ORIG_DIR/dfs/dfs
+#export PATH=$PATH:$ORIG_DIR/
+export CMD=$ORIG_DIR/cmd
+export HTTPD=$ORIG_DIR/httpd
+export DFS_EXE=$ORIG_DIR/dfs
 # export ORIDBG_EXE=$ORIG_DIR/build/oridbg/oridbg
 # export ORI_TESTS=$ORIG_DIR/ori_tests
 
@@ -52,6 +53,7 @@ mkdir $SOURCE_FILES/a/empty_dir
 mkdir $SOURCE_FILES/b
 echo "Foo" > $SOURCE_FILES/b/b.txt
 
+#cp $ORIG_DIR/libs $TEMP_DIR
 
 
 printf "Ori Test Suite\n----------\nRUNNING TESTS\n----------\n"
@@ -92,7 +94,7 @@ $CMD removefs $TEST_FS
 
 
 # Delete test repo, temp dir
-if true; then
+if false; then
     cd $ORIG_DIR
     echo "Deleting directories"
     $CMD removefs $SOURCE_FS

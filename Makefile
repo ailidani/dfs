@@ -17,12 +17,12 @@ EXECUTABLE=libs/libdfs.dylib
 all:
 	$(CC) $(INCLUDE) $(CPP_FLAGS) -c $(CPP_SOURCES)
 	$(C) $(INCLUDE) $(C_FLAGS) -c $(C_SOURCES)
-	$(CC) $(LDFLAGS) *.o -dynamiclib -o libs/libdfs.dylib 
+	$(CC) $(LDFLAGS) *.o -dynamiclib -o run/libdfs.dylib 
 	rm *.o
 	$(CC) $(LDFLAGS) -Llibs -ldfs $(INCLUDE) $(CPP_FLAGS) test/test_dfsutil.cpp -o test/test_dfsutil
-	$(CC) $(LDFLAGS) -Llibs -ldfs $(INCLUDE) $(CPP_FLAGS) httpd/main.cpp -o httpd/httpd
-	$(CC) $(LDFLAGS) -Llibs -ldfs $(INCLUDE) $(CPP_FLAGS) cmd/*.cpp -o cmd/cmd
-	$(CC) $(LDFLAGS) -Llibs -ldfs $(INCLUDE) $(CPP_FLAGS) dfs/*.cpp -o dfs/dfs
+	$(CC) $(LDFLAGS) -Llibs -ldfs $(INCLUDE) $(CPP_FLAGS) httpd/main.cpp -o run/httpd
+	$(CC) $(LDFLAGS) -Llibs -ldfs $(INCLUDE) $(CPP_FLAGS) cmd/*.cpp -o run/cmd
+	$(CC) $(LDFLAGS) -Llibs -ldfs $(INCLUDE) $(CPP_FLAGS) dfs/*.cpp -o run/dfs
 	
 
 
