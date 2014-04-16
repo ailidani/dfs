@@ -11,7 +11,7 @@
 #include <deque>
 #include <vector>
 
-#include <boost/date_time/posix_time/posix_time.hpp>
+//#include <boost/date_time/posix_time/posix_time.hpp>
 
 #include <libdfsutil/debug.h>
 #include <libdfsutil/dfsutil.h>
@@ -87,8 +87,9 @@ ObjectHash UDSRepo::getHead()
 int
 UDSRepo::distance()
 {
-    boost::posix_time::ptime t_begin =
-        boost::posix_time::microsec_clock::local_time();
+    //boost::posix_time::ptime t_begin =
+    //    boost::posix_time::microsec_clock::local_time();
+	clock_t t_begin = clock();
 
     // Send hello command
     client->sendCommand("hello");
@@ -98,9 +99,13 @@ UDSRepo::distance()
     std::string version;
     bs->readPStr(version);
     
-    boost::posix_time::ptime t_end =
-        boost::posix_time::microsec_clock::local_time();
-    return (t_end - t_begin).total_milliseconds();
+    //boost::posix_time::ptime t_end =
+    //    boost::posix_time::microsec_clock::local_time();
+    clock_t t_end = clock();
+
+    //return (t_end - t_begin).total_milliseconds();
+    double result = ((double)(t_end - t_begin))/CLOCKS_PER_SEC * 1000;
+    return static_cast<int>(result);
 }
 
 Object::sp UDSRepo::getObject(const ObjectHash &id)
