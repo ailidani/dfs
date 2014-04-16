@@ -25,7 +25,7 @@ all:
 	$(CC) $(LDFLAGS) -L. -ldfs $(INCLUDE) $(CPP_FLAGS) cmd/*.cpp -o bin/cmd
 	$(CC) $(LDFLAGS) -L. -ldfs $(INCLUDE) $(CPP_FLAGS) dfs/*.cpp -o bin/dfs
 	$(CC) $(LDFLAGS) -L. -ldfs $(INCLUDE) $(CPP_FLAGS) dfssync/*.cpp -o bin/dfssync
-	
+	$(CC) $(LDFLAGS) -L. -ldfs $(INCLUDE) $(CPP_FLAGS) mds/*.cpp -o bin/mds
 
 
 ##==========================================================================
