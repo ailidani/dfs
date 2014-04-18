@@ -1,8 +1,8 @@
 
-CC=g++
-C=gcc
-CPP_FLAGS=-Wall -std=c++0x -D_FILE_OFFSET_BITS=64
-C_FLAGS=-Wall
+CC=/opt/local/bin/g++-mp-4.8
+C=/opt/local/bin/gcc-mp-4.8
+CPP_FLAGS=-std=c++0x -D_FILE_OFFSET_BITS=64 -g -O0 -DDEBUG
+C_FLAGS=-g -O0 -DDEBUG
 
 LDFLAGS=-L/usr/local/lib/ -L/opt/local/lib/ -lz -levent -losxfuse -lssl -lresolv -lcrypto -llzma
 

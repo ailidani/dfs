@@ -39,7 +39,7 @@
 using namespace std;
 
 // Announcement UDP port
-#define MDS_UDPPORT         8051
+#define MDS_UDPPORT         5001
 // Advertisement interval
 #define MDS_ADVINTERVAL     5
 // Reject advertisements with large time skew

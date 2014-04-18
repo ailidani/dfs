@@ -459,7 +459,7 @@ main(int argc, char *argv[])
 
 #if defined(DEBUG) || defined(ORI_PERF)
     string logPath = Util_GetHome() + "/.ori/oricli.log";
-    ori_open_log(logPath);
+    dfs_open_log(logPath);
 #endif
 
     client = NULL;

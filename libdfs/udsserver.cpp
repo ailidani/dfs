@@ -381,7 +381,7 @@ void UDSSession::cmd_callExt()
     in.readPStr(ext);
     in.readLPStr(data);
 
-    DLOG("callExt %s", ext.c_str());
+    DLOG("callExt %s %s", ext.c_str(), data.c_str());
     fdwstream fs(fd);
     if (!uds->hasExt(ext)) {
         fs.writeUInt8(ERROR);

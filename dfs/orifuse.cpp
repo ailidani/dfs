@@ -1156,7 +1156,7 @@ int main(int argc, char *argv[])
 
     if (!OriFile_Exists(config.repoPath) && !createReplica) {
         printf("Repository does not exist! You must create one with ");
-        printf("'ori init', or you may\nreplicate one from another host!\n");
+        printf("'cmd init', or you may\nreplicate one from another host!\n");
         return 1;
     }
 
@@ -1234,7 +1234,7 @@ int main(int argc, char *argv[])
         NOT_IMPLEMENTED(false);
     }
 
-    char fuse_cmd[] = "orifs";
+    char fuse_cmd[] = "dfs";
     char fuse_single[] = "-s";
     char fuse_debug[] = "-d";
     char fuse_mntpt[512];

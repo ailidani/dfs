@@ -250,8 +250,7 @@ void bytestream::readInfo(ObjectInfo &out)
     out.fromString(info_str);
 }
 
-int8_t
-bytestream::readInt8()
+int8_t bytestream::readInt8()
 {
     if (typedStream) {
         uint8_t type;
@@ -268,8 +267,7 @@ bytestream::readInt8()
     return rval;
 }
 
-int16_t
-bytestream::readInt16()
+int16_t bytestream::readInt16()
 {
     if (typedStream) {
         uint8_t type;
@@ -286,8 +284,7 @@ bytestream::readInt16()
     return be16toh(rval);
 }
 
-int32_t
-bytestream::readInt32()
+int32_t bytestream::readInt32()
 {
     if (typedStream) {
         uint8_t type;
@@ -304,8 +301,7 @@ bytestream::readInt32()
     return be32toh(rval);
 }
 
-int64_t
-bytestream::readInt64()
+int64_t bytestream::readInt64()
 {
     if (typedStream) {
         uint8_t type;
@@ -322,8 +318,7 @@ bytestream::readInt64()
     return be64toh(rval);
 }
 
-uint8_t
-bytestream::readUInt8()
+uint8_t bytestream::readUInt8()
 {
     if (typedStream) {
         uint8_t type;
@@ -340,8 +335,7 @@ bytestream::readUInt8()
     return rval;
 }
 
-uint16_t
-bytestream::readUInt16()
+uint16_t bytestream::readUInt16()
 {
     if (typedStream) {
         uint8_t type;
@@ -358,8 +352,7 @@ bytestream::readUInt16()
     return be16toh(rval);
 }
 
-uint32_t
-bytestream::readUInt32()
+uint32_t bytestream::readUInt32()
 {
     if (typedStream) {
         uint8_t type;
@@ -376,8 +369,7 @@ bytestream::readUInt32()
     return be32toh(rval);
 }
 
-uint64_t
-bytestream::readUInt64()
+uint64_t bytestream::readUInt64()
 {
     if (typedStream) {
         uint8_t type;
@@ -796,8 +788,7 @@ int bytewstream::writeInfo(const ObjectInfo &info)
     return write(&info_str[0], ObjectInfo::SIZE);
 }
 
-int
-bytewstream::writeInt8(int8_t n)
+int bytewstream::writeInt8(int8_t n)
 {
     if (typedStream) {
         uint8_t type = STREAM_TYPE_INT8;
@@ -807,8 +798,7 @@ bytewstream::writeInt8(int8_t n)
     return (int)write(&n, sizeof(int8_t));
 }
 
-int
-bytewstream::writeInt16(int16_t n)
+int bytewstream::writeInt16(int16_t n)
 {
     int16_t val = htobe16(n);
     if (typedStream) {
@@ -819,8 +809,7 @@ bytewstream::writeInt16(int16_t n)
     return (int)write(&val, sizeof(int16_t));
 }
 
-int
-bytewstream::writeInt32(int32_t n)
+int bytewstream::writeInt32(int32_t n)
 {
     int32_t val = htobe32(n);
     if (typedStream) {
@@ -831,8 +820,7 @@ bytewstream::writeInt32(int32_t n)
     return (int)write(&val, sizeof(int32_t));
 }
 
-int
-bytewstream::writeInt64(int64_t n)
+int bytewstream::writeInt64(int64_t n)
 {
     int64_t val = htobe64(n);
     if (typedStream) {
@@ -843,8 +831,7 @@ bytewstream::writeInt64(int64_t n)
     return (int)write(&val, sizeof(int64_t));
 }
 
-int
-bytewstream::writeUInt8(uint8_t n)
+int bytewstream::writeUInt8(uint8_t n)
 {
     if (typedStream) {
         uint8_t type = STREAM_TYPE_UINT8;
@@ -854,8 +841,7 @@ bytewstream::writeUInt8(uint8_t n)
     return (int)write(&n, sizeof(uint8_t));
 }
 
-int
-bytewstream::writeUInt16(uint16_t n)
+int bytewstream::writeUInt16(uint16_t n)
 {
     uint16_t val = htobe16(n);
     if (typedStream) {
@@ -866,8 +852,7 @@ bytewstream::writeUInt16(uint16_t n)
     return (int)write(&val, sizeof(uint16_t));
 }
 
-int
-bytewstream::writeUInt32(uint32_t n)
+int bytewstream::writeUInt32(uint32_t n)
 {
     uint32_t val = htobe32(n);
     if (typedStream) {
@@ -878,8 +863,7 @@ bytewstream::writeUInt32(uint32_t n)
     return (int)write(&val, sizeof(uint32_t));
 }
 
-int
-bytewstream::writeUInt64(uint64_t n)
+int bytewstream::writeUInt64(uint64_t n)
 {
     uint64_t val = htobe64(n);
     if (typedStream) {

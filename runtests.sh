@@ -88,7 +88,7 @@ cd ~/.ori/$TEST_FS.ori/
 cd $ORIG_DIR
 
 # remove
-$CMD removefs $TEST_FS
+#$CMD removefs $TEST_FS
 
 # =================================================
 # Clone local 
