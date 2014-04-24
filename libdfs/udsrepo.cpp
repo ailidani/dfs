@@ -84,8 +84,7 @@ ObjectHash UDSRepo::getHead()
     return hash;
 }
 
-int
-UDSRepo::distance()
+int UDSRepo::distance()
 {
     //boost::posix_time::ptime t_begin =
     //    boost::posix_time::microsec_clock::local_time();
@@ -149,8 +148,7 @@ Object::sp UDSRepo::getObject(const ObjectHash &id)
     return Object::sp();
 }
 
-bytestream *
-UDSRepo::getObjects(const ObjectHashVec &objs)
+bytestream * UDSRepo::getObjects(const ObjectHashVec &objs)
 {
     client->sendCommand("readobjs");
 
@@ -170,8 +168,7 @@ UDSRepo::getObjects(const ObjectHashVec &objs)
     return NULL;
 }
 
-ObjectInfo
-UDSRepo::getObjectInfo(const ObjectHash &id)
+ObjectInfo UDSRepo::getObjectInfo(const ObjectHash &id)
 {
     client->sendCommand("getobjinfo");
 
@@ -224,8 +221,7 @@ std::set<ObjectInfo> UDSRepo::listObjects()
     return rval;
 }
 
-int
-UDSRepo::addObject(ObjectType type, const ObjectHash &hash,
+int UDSRepo::addObject(ObjectType type, const ObjectHash &hash,
         const std::string &payload)
 {
     NOT_IMPLEMENTED(false);
@@ -253,8 +249,7 @@ std::vector<Commit> UDSRepo::listCommits()
     return rval;
 }
 
-void
-UDSRepo::transmit(bytewstream *out, const ObjectHashVec &objs)
+void UDSRepo::transmit(bytewstream *out, const ObjectHashVec &objs)
 {
     numobjs_t num;
     bytestream *in = getObjects(objs);
@@ -294,8 +289,7 @@ UDSRepo::transmit(bytewstream *out, const ObjectHashVec &objs)
     return;
 }
 
-set<string>
-UDSRepo::listExt()
+set<string> UDSRepo::listExt()
 {
     set<string> exts;
     client->sendCommand("ext list");
@@ -314,8 +308,7 @@ UDSRepo::listExt()
     return exts;
 }
 
-string
-UDSRepo::callExt(const string &ext, const string &data)
+string UDSRepo::callExt(const string &ext, const string &data)
 {
     client->sendCommand("ext call");
 
