@@ -51,7 +51,7 @@ static int cmd_foreground(int argc, const char *argv[]);
 static Cmd commands[] = {
     {
         "init",
-        "Interactively configure OriSync",
+        "Interactively configure MDS",
         cmd_init,
         NULL,
         0,
@@ -65,7 +65,7 @@ static Cmd commands[] = {
     },
     {
         "remove",
-        "Remove a repository from OriSync",
+        "Remove a repository from MDS",
         cmd_remove,
         NULL,
         0,
@@ -146,7 +146,7 @@ static int cmd_help(int argc, const char *argv[])
         return 0;
     }
 
-    printf("OriSync (%s) - Command Line Interface\n\n",
+    printf("MDS (%s) - Command Line Interface\n\n",
             ORI_VERSION_STR);
     printf("Available commands:\n");
     for (i = 0; commands[i].name != NULL; i++)
@@ -158,9 +158,6 @@ static int cmd_help(int argc, const char *argv[])
         if (commands[i].desc != NULL)
             printf("%-15s %s\n", commands[i].name, commands[i].desc);
     }
-
-    printf("\nPlease report bugs to orifs-devel@stanford.edu\n");
-    printf("Website: http://ori.scs.stanford.edu/\n");
 
     return 0;
 }

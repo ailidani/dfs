@@ -19,7 +19,7 @@ cmd_add(int argc, const char *argv[])
     if (argc != 2)
     {
         cout << "Sepcify a repository to add" << endl;
-        cout << "usage: orisync add <repository>" << endl;
+        cout << "usage: dfssync add <repository>" << endl;
     }
 
     // XXX: verify repo

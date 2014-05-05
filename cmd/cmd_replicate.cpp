@@ -41,8 +41,7 @@ using namespace std;
 
 extern LocalRepo repository;
 
-void
-usage_replicate()
+void usage_replicate()
 {
     cout << "ori replicate [OPTIONS] SOURCE [DESTINATION]" << endl;
     cout << endl;
@@ -54,8 +53,7 @@ usage_replicate()
     cout << "    --shallow      Shallow clone" << endl;
 }
 
-int
-cmd_replicate(int argc, char * const argv[])
+int cmd_replicate(int argc, char * const argv[])
 {
     int ch;
     int clone_mode = 0;

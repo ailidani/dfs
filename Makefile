@@ -39,4 +39,5 @@ all:
 ##==========================================================================
 clean:
 	@-	rm libs/libdfs.dylib
+	@-	rm bin/*
 	@-	echo "Data Cleansing Done. Ready to Compile"

@@ -66,6 +66,9 @@ static void* ori_init(struct fuse_conn_info *conn)
 
     priv->init();
 
+    FUSE_LOG("Metadata Service starting ...");
+    MDS::get()->start();
+
     return priv;
 }
 
@@ -90,121 +93,42 @@ static int ori_mknod(const char *path, mode_t mode, dev_t dev)
 
 static int ori_unlink(const char *path)
 {
-    OriPriv *priv = GetOriPriv();
+	FUSE_LOG("FUSE ori_unlink(path=\"%s\")", path);
+	if (strcmp(path, ORI_CONTROL_FILEPATH) == 0) {
+		return -EACCES;
+	} else if (strncmp(path,
+				ORI_SNAPSHOT_DIRPATH,
+				strlen(ORI_SNAPSHOT_DIRPATH)) == 0) {
+		return -EACCES;
+	}
 
-#ifdef FSCK_A_LOT
-    priv->fsck();
-#endif /* FSCK_A_LOT */
-
-    FUSE_LOG("FUSE ori_unlink(path=\"%s\")", path);
-
-    if (strcmp(path, ORI_CONTROL_FILEPATH) == 0) {
-        return -EACCES;
-    } else if (strncmp(path,
-                ORI_SNAPSHOT_DIRPATH,
-                strlen(ORI_SNAPSHOT_DIRPATH)) == 0) {
-        return -EACCES;
-    }
-
-    RWKey::sp lock = priv->nsLock.writeLock();
-    try {
-        OriFileInfo *info = priv->getFileInfo(path);
-
-        if (info->isDir())
-            return -EPERM;
-
-        // Remove temporary file
-        if (info->path != "")
-            unlink(info->path.c_str());
-
-        if (info->isReg() || info->isSymlink()) {
-            priv->unlink(path);
-        } else {
-            // XXX: Support files
-            ASSERT(false);
-        }
-    } catch (SystemException e) {
-        return -e.getErrno();
-    }
-
-    priv->journal("unlink", path);
-
-    return 0;
+    return MDS::get()->unlink(path);
 }
 
 static int ori_symlink(const char *target_path, const char *link_path)
 {
-    OriPriv *priv = GetOriPriv();
-    OriDir *parentDir;
-    string parentPath;
-
-#ifdef FSCK_A_LOT
-    priv->fsck();
-#endif /* FSCK_A_LOT */
+	if (strcmp(link_path, ORI_CONTROL_FILEPATH) == 0) {
+		return -EACCES;
+	} else if (strncmp(link_path,
+				ORI_SNAPSHOT_DIRPATH,
+				strlen(ORI_SNAPSHOT_DIRPATH)) == 0) {
+		return -EACCES;
+	}
 
     FUSE_LOG("FUSE ori_symlink(path=\"%s\")", link_path);
 
-    parentPath = OriFile_Dirname(link_path);
-    if (parentPath == "")
-        parentPath = "/";
-
-    if (strcmp(link_path, ORI_CONTROL_FILEPATH) == 0) {
-        return -EACCES;
-    } else if (strncmp(link_path,
-                ORI_SNAPSHOT_DIRPATH,
-                strlen(ORI_SNAPSHOT_DIRPATH)) == 0) {
-        return -EACCES;
-    }
-
-    RWKey::sp lock = priv->nsLock.writeLock();
-    try {
-        parentDir = priv->getDir(parentPath);
-    } catch (SystemException e) {
-        return -e.getErrno();
-    }
-
-    OriFileInfo *info = priv->addSymlink(link_path);
-    info->statInfo.st_mode |= 0755;
-    info->link = target_path;
-    info->statInfo.st_size = info->path.length();
-    info->type = FILETYPE_DIRTY;
-
-    parentDir->add(OriFile_Basename(link_path), info->id);
-
-    return 0;
+    return MDS::get()->symlink(target_path, link_path);
 }
 
 static int ori_readlink(const char *path, char *buf, size_t size)
 {
-    OriPriv *priv = GetOriPriv();
-    OriFileInfo *info;
-
-#ifdef FSCK_A_LOT
-    priv->fsck();
-#endif /* FSCK_A_LOT */
-
     FUSE_LOG("FUSE ori_readlink(path\"%s\", size=%ld)", path, size);
 
-    RWKey::sp lock = priv->nsLock.readLock();
-    try {
-        info = priv->getFileInfo(path);
-    } catch (SystemException e) {
-        return -e.getErrno();
-    }
-
-    memcpy(buf, info->link.c_str(), MIN(info->link.length() + 1, size));
-
-    return 0;
+    return MDS::get()->readlink(path, buf, size);
 }
 
 static int ori_rename(const char *from_path, const char *to_path)
 {
-    OriPriv *priv = GetOriPriv();
-
-#ifdef FSCK_A_LOT
-    priv->fsck();
-#endif /* FSCK_A_LOT */
-
     FUSE_LOG("FUSE ori_rename(from_path=\"%s\", to_path=\"%s\")",
              from_path, to_path);
 
@@ -219,47 +143,7 @@ static int ori_rename(const char *from_path, const char *to_path)
         return -EACCES;
     }
 
-    RWKey::sp lock = priv->nsLock.writeLock();
-    try {
-        OriFileInfo *info = priv->getFileInfo(from_path);
-        OriFileInfo *toFile = NULL;
-        OriDir *toFileDir = NULL;
-
-        try {
-            toFile = priv->getFileInfo(to_path);
-        } catch (SystemException e) {
-            // Fall through
-        }
-
-        // Not sure if FUSE checks for these two error cases
-        if (toFile != NULL && toFile->isDir()) {
-            toFileDir = priv->getDir(to_path);
-
-            if (!toFileDir->isEmpty())
-                return -ENOTEMPTY;
-        }
-        if (toFile != NULL && info->isDir() && !toFile->isDir()) {
-            return -EISDIR;
-        }
-
-        // XXX: Need to support renaming directories (nlink, OriPriv::Rename)
-        if (info->isDir()) {
-            FUSE_LOG("ori_rename: Directory rename attempted %s to %s",
-                     from_path, to_path);
-            return -EINVAL;
-        }
-
-        priv->rename(from_path, to_path);
-    } catch (SystemException &e) {
-        return -e.getErrno();
-    }
-
-    string journalArg = from_path;
-    journalArg += ":";
-    journalArg += to_path;
-    priv->journal("rename", journalArg);
-
-    return 0;
+    return MDS::get()->rename(from_path, to_path);
 }
 
 // File IO
@@ -572,12 +456,6 @@ ori_release(const char *path, struct fuse_file_info *fi)
 static int
 ori_mkdir(const char *path, mode_t mode)
 {
-    OriPriv *priv = GetOriPriv();
-
-#ifdef FSCK_A_LOT
-    priv->fsck();
-#endif /* FSCK_A_LOT */
-
     FUSE_LOG("FUSE ori_mkdir(path=\"%s\")", path);
 
     if (strncmp(path,
@@ -586,28 +464,12 @@ ori_mkdir(const char *path, mode_t mode)
         return -EACCES;
     }
 
-    RWKey::sp lock = priv->nsLock.writeLock();
-    try {
-        OriFileInfo *info = priv->addDir(path);
-        info->statInfo.st_mode |= mode;
-    } catch (SystemException e) {
-        return -e.getErrno();
-    }
-
-    priv->journal("mkdir", path);
-
-    return 0;
+    return MDS::get()->mkdir(path, mode);
 }
 
 static int
 ori_rmdir(const char *path)
 {
-    OriPriv *priv = GetOriPriv();
-
-#ifdef FSCK_A_LOT
-    priv->fsck();
-#endif /* FSCK_A_LOT */
-
     FUSE_LOG("FUSE ori_rmdir(path=\"%s\")", path);
 
     if (strncmp(path,
@@ -616,31 +478,7 @@ ori_rmdir(const char *path)
         return -EACCES;
     }
 
-    RWKey::sp lock = priv->nsLock.writeLock();
-    try {
-        OriDir *dir = priv->getDir(path);
-
-        if (!dir->isEmpty()) {
-            OriDir::iterator it;
-
-            FUSE_LOG("Directory not empty!");
-            for (it = dir->begin(); it != dir->end(); it++) {
-                FUSE_LOG("DIR: %s\n", it->first.c_str());
-            }
-
-            return -ENOTEMPTY;
-        }
-
-        priv->rmDir(path);
-
-    } catch (SystemException &e) {
-        FUSE_LOG("ori_rmdir: Caught exception %s", e.what());
-        return -e.getErrno();
-    }
-
-    priv->journal("rmdir", path);
-
-    return 0;
+    return MDS::get()->rmdir(path);
 }
 
 static int
@@ -1250,7 +1088,7 @@ int main(int argc, char *argv[])
     strncpy(fuse_mntpt, config.mountPoint.c_str(), 512);
 
     // disable threading temporarily
-    config.single = 1;
+    //config.single = 1;
     if (config.single == 1)
     {
         fuse_argv[fuse_argc] = fuse_single;

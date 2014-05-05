@@ -5,6 +5,13 @@
 
 #include <libdfsutil/dfsfile.h>
 
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/map.hpp>
+
+
 typedef enum OriFileType
 {
     FILETYPE_NULL,
@@ -104,7 +111,7 @@ public:
     iterator begin() { return entries.begin(); }
     iterator end() { return entries.end(); }
     iterator find(const std::string &name) { return entries.find(name); }
-private:
+//private:
     bool dirty;
     std::map<std::string, OriPrivId> entries;
 };
@@ -137,6 +144,14 @@ public:
             const std::string &origin = "",
             Repo *remoteRepo = NULL);
     ~OriPriv();
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+    	ar & dirs;
+    	ar & paths;
+    }
+
     // Repository Operations
     void reset();
     void init();
@@ -186,6 +201,7 @@ public:
     RWLock nsLock; // Namespace lock
 
     LocalRepo *getRepo();
+
 private:
     OriPrivId nextId;
     uint64_t nextFH;
@@ -208,6 +224,41 @@ private:
 };
 
 OriPriv *GetOriPriv();
+
+namespace boost {
+namespace serialization {
+
+template<class Archive>
+void serialize(Archive & ar, ObjectHash & hash, const unsigned int version)
+{
+	ar & hash.hash;
+}
+
+template<class Archive>
+void serialize(Archive & ar, OriFileInfo & info, const unsigned int version)
+{
+	ar & info.statInfo;
+	ar & info.hash;
+	ar & info.largeHash;
+	ar & info.type;
+	ar & info.id;
+	ar & info.path;
+	ar & info.link;
+	ar & info.fd;
+	ar & info.refCount;
+	ar & info.openCount;
+	ar & info.dirLoaded;
+}
+
+template<class Archive>
+void serialize(Archive & ar, OriDir & dir, const unsigned int version)
+{
+	ar & dir.dirty;
+	ar & dir.entries;
+}
+
+}
+} /* end of namespace boost */
 
 #endif
 
