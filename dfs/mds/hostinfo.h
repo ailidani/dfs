@@ -19,11 +19,11 @@ public:
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int version)
 	{
-		ar & preferredIp;
-		ar & host;
-		ar & hostId;
-		ar & cluster;
-		ar & repos;
+		ar & BOOST_SERIALIZATION_NVP(preferredIp);
+		ar & BOOST_SERIALIZATION_NVP(host);
+		ar & BOOST_SERIALIZATION_NVP(hostId);
+		ar & BOOST_SERIALIZATION_NVP(cluster);
+		ar & BOOST_SERIALIZATION_NVP(repos);
 	}
     HostInfo() {
     }

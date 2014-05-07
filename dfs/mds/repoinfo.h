@@ -13,9 +13,9 @@ public:
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int version)
 	{
-		ar & repoId;
-		ar & head;
-		ar & path;
+		ar & BOOST_SERIALIZATION_NVP(repoId);
+		ar & BOOST_SERIALIZATION_NVP(head);
+		ar & BOOST_SERIALIZATION_NVP(path);
 	}
     RepoInfo() {
     }
