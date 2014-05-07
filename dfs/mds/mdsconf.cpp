@@ -11,6 +11,7 @@
 #include <libdfsutil/dfsfile.h>
 
 #include "mdsconf.h"
+#include "mds.h"
 
 using namespace std;
 
@@ -24,7 +25,7 @@ MDSConf::MDSConf()
     if (!OriFile_Exists(home + "/.ori"))
         OriFile_MkDir(home + "/.ori");
 
-    rcFile = home + "/.ori/mdsconf";
+    rcFile = home + MDS_CONFFILE;
     if (OriFile_Exists(rcFile)) {
         load();
     }

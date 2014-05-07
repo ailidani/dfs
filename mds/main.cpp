@@ -105,6 +105,7 @@ static Cmd commands[] = {
         NULL,
         0,
     },
+    /*
     {
         "foreground",
         "Foreground mode for debugging",
@@ -112,6 +113,7 @@ static Cmd commands[] = {
         NULL,
         CMD_DEBUG,
     },
+    */
     { NULL, NULL, NULL, NULL }
 };
 
@@ -174,14 +176,14 @@ static int cmd_foreground(int argc, const char *argv[])
 
     dfs_open_log(Util_GetHome() + MDS_LOGFILE);
 
-    return start_server();
+    //return start_server();
 }
 
 int main(int argc, char *argv[])
 {
     int idx;
 
-    if (argc == 1) {
+    if (argc == 0) {
         pid_t pid;
         string oriHome = Util_GetHome() + "/.ori";
 
@@ -203,7 +205,7 @@ int main(int argc, char *argv[])
             return 0;
         }
 
-        return start_server();
+        //return start_server();
     }
 
     idx = lookupcmd(argv[1]);

@@ -3,10 +3,28 @@
 #define mds_hostinfo_h
 
 #include <cassert>
+#include <list>
+
+#include "repoinfo.h"
+
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/map.hpp>
 
 class HostInfo
 {
 public:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive & ar, const unsigned int version)
+	{
+		ar & preferredIp;
+		ar & host;
+		ar & hostId;
+		ar & cluster;
+		ar & repos;
+	}
     HostInfo() {
     }
     HostInfo(const std::string &hostId, const std::string &cluster) {

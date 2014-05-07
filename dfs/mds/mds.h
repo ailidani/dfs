@@ -25,6 +25,7 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <fstream>
 
 #include <event2/event.h>
 #include <event2/http.h>
@@ -59,9 +60,21 @@
 #include "repoinfo.h"
 #include "hostinfo.h"
 #include "repocontrol.h"
+#include "announcer.h"
+#include "listener.h"
+#include "repomonitor.h"
+#include "syncer.h"
+
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/serialization/set.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/map.hpp>
 
 // Announcement UDP port
 #define MDS_UDPPORT         5001
+// Messaging UDP port
+#define MDS_SERVER_PORT		5002
 // Advertisement interval
 #define MDS_ADVINTERVAL     5
 // Reject advertisements with large time skew
@@ -72,16 +85,26 @@
 #define MDS_SYNCINTERVAL    5
 
 #define MDS_LOGFILE         "/.ori/mds.log"
+#define MDS_CONFFILE		"/.ori/mds.conf"
+#define MDS_METAFILE		"/.ori/mds.meta.xml"
 
 class MDS : public Thread
 {
 public:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive & ar, const unsigned int version)
+	{
+		ar & mypaths;
+		ar & masters;
+	}
 	static MDS* get()
 	{
 		if(mds == 0)
 			mds = new MDS;
 		return mds;
 	}
+	~MDS();
 	void run()
 	{
 		std::string oriHome = Util_GetHome() + "/.ori";
@@ -95,15 +118,12 @@ public:
 	}
 	int start_server();
 
-	int unlink(const std::string &path);
-	int symlink(const std::string &target_path, const std::string &link_path);
-	int readlink(const std::string &path, char* buf, size_t size);
-	int rename(const std::string &from_path, const std::string &to_path);
-	int mkdir(const std::string &path, mode_t mode);
-	int rmdir(const std::string &path);
-
-
-	//std::string process(const std::string &data);
+	int mds_unlink(const std::string &path, bool fromFUSE);
+	int mds_symlink(const std::string &target_path, const std::string &link_path, bool fromFUSE);
+	int mds_readlink(const std::string &path, char* buf, size_t size);
+	int mds_rename(const std::string &from_path, const std::string &to_path, bool fromFUSE);
+	int mds_mkdir(const std::string &path, mode_t mode, bool fromFUSE);
+	int mds_rmdir(const std::string &path, bool fromFUSE);
 
 	MDSConf rc;
 	HostInfo myInfo;
@@ -114,25 +134,9 @@ public:
 protected:
 	MDS();
 
-	std::string req_is_master(strstream &str)
-	{
-		ObjectHash objhash;
-		str.readHash(objhash);
-
-		strwstream resp;
-
-		std::unordered_set<ObjectHash>::iterator it;
-		it = myobjs.find(objhash);
-		if(it != myobjs.end())
-			resp.writeUInt8(1);
-		else resp.writeUInt8(0);
-
-		return resp.str();
-	}
-
 	bool is_master(std::string path)
 	{
-		std::unordered_set<std::string>::iterator it;
+		std::set<std::string>::iterator it;
 		it = mypaths.find(path);
 		return it != mypaths.end();
 	}
@@ -155,15 +159,14 @@ private:
 	RepoMonitor *repoMonitor;
 	Syncer *syncer;
 
-	std::unordered_set<std::string> mypaths;
-	typedef std::unordered_map<std::string, HostInfo *> MasterMap;
+	std::set<std::string> mypaths;
+	typedef std::map<std::string, HostInfo *> MasterMap;
 	MasterMap masters;
 
-	//typedef std::unordered_map<ObjectHash, HostInfo *> MasterMap;
-	//MetadataLog metadata_log;
+	void load();
+	void save() const;
 
-	std::unordered_set<ObjectHash> myobjs;
-
+	std::string metafile;
 
 };
 

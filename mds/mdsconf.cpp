@@ -24,7 +24,7 @@ MDSConf::MDSConf()
     if (!OriFile_Exists(home + "/.ori"))
         OriFile_MkDir(home + "/.ori");
 
-    rcFile = home + "/.ori/mdsconf";
+    rcFile = home + "/.ori/mds.conf";
     if (OriFile_Exists(rcFile)) {
         load();
     }

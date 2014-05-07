@@ -2,8 +2,21 @@
 #ifndef mds_repoinfo_h
 #define mds_repoinfo_h
 
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/map.hpp>
+
 class RepoInfo {
 public:
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive & ar, const unsigned int version)
+	{
+		ar & repoId;
+		ar & head;
+		ar & path;
+	}
     RepoInfo() {
     }
     RepoInfo(const std::string &repoId, const std::string &path) {

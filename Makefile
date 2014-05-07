@@ -1,14 +1,16 @@
 
-CC=/opt/local/bin/g++-mp-4.8
-C=/opt/local/bin/gcc-mp-4.8
-CPP_FLAGS=-std=c++0x -D_FILE_OFFSET_BITS=64 -g -O0 -DDEBUG
-C_FLAGS=-g -O0 -DDEBUG
+#CC=/opt/local/bin/g++-mp-4.8
+#C=/opt/local/bin/gcc-mp-4.8
+CC=g++
+C=gcc
+CPP_FLAGS=-std=c++0x -D_FILE_OFFSET_BITS=64 -O0 -DDEBUG
+C_FLAGS=-O0 -DDEBUG
 
-LDFLAGS=-L/usr/local/lib/ -L/opt/local/lib/ -lz -levent -losxfuse -lssl -lresolv -lcrypto -llzma
+LDFLAGS=-L/usr/local/lib/ -L/opt/local/lib/ -lz -levent -losxfuse -lssl -lresolv -lcrypto -llzma -lboost_iostreams-mt -lboost_serialization-mt -lboost_system-mt
 
 INCLUDE=-I"/Users/eddieaili/Documents/workspace/dfs" -I/opt/local/include -I/usr/local/include/osxfuse
 
-CPP_SOURCES=libdfsutil/*.cpp libdfs/*.cpp
+CPP_SOURCES=libdfsutil/*.cpp libdfs/*.cpp dfs/mds/*.cpp dfs/mds/*.hpp
 CPP_OBJECTS=$(CPP_SOURCES:.cpp=.o)
 C_SOURCES=libfastlz/fastlz.c libdiffmerge/*.c
 C_OBJECTS=$(C_SOURCES:.c=.o)

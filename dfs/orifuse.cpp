@@ -40,6 +40,9 @@
 #include "oripriv.h"
 #include "oriopt.h"
 
+#include "mds/mds.h"
+#include "mds/server.h"
+
 #ifdef DEBUG
 #define FSCK_A_LOT
 #endif
@@ -68,6 +71,7 @@ static void* ori_init(struct fuse_conn_info *conn)
 
     FUSE_LOG("Metadata Service starting ...");
     MDS::get()->start();
+    server::instance()->run();
 
     return priv;
 }
@@ -80,6 +84,8 @@ static void ori_destroy(void *userdata)
     priv->commit(c);
     priv->cleanup();
     delete priv;
+
+    delete MDS::get();
 
     FUSE_LOG("File system unmounted");
 }
@@ -102,7 +108,7 @@ static int ori_unlink(const char *path)
 		return -EACCES;
 	}
 
-    return MDS::get()->unlink(path);
+    return MDS::get()->mds_unlink(path, true);
 }
 
 static int ori_symlink(const char *target_path, const char *link_path)
@@ -117,14 +123,14 @@ static int ori_symlink(const char *target_path, const char *link_path)
 
     FUSE_LOG("FUSE ori_symlink(path=\"%s\")", link_path);
 
-    return MDS::get()->symlink(target_path, link_path);
+    return MDS::get()->mds_symlink(target_path, link_path, true);
 }
 
 static int ori_readlink(const char *path, char *buf, size_t size)
 {
     FUSE_LOG("FUSE ori_readlink(path\"%s\", size=%ld)", path, size);
 
-    return MDS::get()->readlink(path, buf, size);
+    return MDS::get()->mds_readlink(path, buf, size);
 }
 
 static int ori_rename(const char *from_path, const char *to_path)
@@ -143,7 +149,7 @@ static int ori_rename(const char *from_path, const char *to_path)
         return -EACCES;
     }
 
-    return MDS::get()->rename(from_path, to_path);
+    return MDS::get()->mds_rename(from_path, to_path, true);
 }
 
 // File IO
@@ -464,7 +470,7 @@ ori_mkdir(const char *path, mode_t mode)
         return -EACCES;
     }
 
-    return MDS::get()->mkdir(path, mode);
+    return MDS::get()->mds_mkdir(path, mode, true);
 }
 
 static int
@@ -478,7 +484,7 @@ ori_rmdir(const char *path)
         return -EACCES;
     }
 
-    return MDS::get()->rmdir(path);
+    return MDS::get()->mds_rmdir(path, true);
 }
 
 static int

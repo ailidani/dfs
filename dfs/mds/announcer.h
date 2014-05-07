@@ -2,69 +2,40 @@
 #ifndef mds_announcer_h
 #define mds_announcer_h
 
-#include "mds.h"
+#include <libdfsutil/thread.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <cstdlib>
+
+#include <unistd.h>
+#include <errno.h>
+
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/param.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <pwd.h>
+
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#include <string>
+#include <vector>
+#include <map>
+#include <iostream>
 
 class Announcer : public Thread
 {
 public:
-    Announcer() : Thread() {
-        int status;
-        int broadcast = 1;
-
-        fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-        if (fd < 0) {
-            throw SystemException();
-        }
-
-        status = setsockopt(fd, SOL_SOCKET, SO_BROADCAST,
-                            &broadcast, sizeof(broadcast));
-        if (status < 0) {
-            close(fd);
-            throw SystemException();
-        }
-
-        memset(&dstAddr, 0, sizeof(dstAddr));
-        dstAddr.sin_family = AF_INET;
-        dstAddr.sin_addr.s_addr = htonl(INADDR_BROADCAST);
-        dstAddr.sin_port = htons(MDS_UDPPORT);
-    }
+    Announcer();
     ~Announcer() {
         close(fd);
     }
-    std::string generate() {
-        RWKey::sp key = infoLock.readLock();
-        char buf[32];
-        std::string msg;
-
-        // First 31 bytes of cluster with null
-        memset(buf, 0, 32);
-        strncpy(buf, MDS::get()->rc.getCluster().c_str(), 31);
-        msg.assign(buf, 32);
-        msg.append(OriCrypt_Encrypt(MDS::get()->myInfo.getBlob(), MDS::get()->rc.getKey()));
-
-        return msg;
-    }
-    void run() {
-        while (!interruptionRequested()) {
-            int status;
-            std::string msg;
-            size_t len;
-
-            msg = generate();
-            len = msg.size();
-
-            status = sendto(fd, msg.c_str(), len, 0,
-                            (struct sockaddr *)&dstAddr,
-                            sizeof(dstAddr));
-            if (status < 0) {
-                perror("sendto");
-            }
-
-            sleep(MDS_ADVINTERVAL);
-        }
-
-        DLOG("Announcer exited!");
-    }
+    std::string generate();
+    void run();
 private:
     int fd;
     struct sockaddr_in dstAddr;

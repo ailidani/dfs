@@ -3,6 +3,11 @@
 #ifndef libdfsutil_kvserializer_h
 #define libdfsutil_kvserializer_h
 
+#include <stdint.h>
+#include <iostream>
+#include <string>
+#include <map>
+
 #include "serializationexception.h"
 
 class KVSerializer

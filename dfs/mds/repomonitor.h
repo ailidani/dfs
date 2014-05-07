@@ -2,7 +2,30 @@
 #ifndef mds_repomonitor_h
 #define mds_repomonitor_h
 
-#include "mds.h"
+#include <libdfsutil/thread.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <cstdlib>
+
+#include <unistd.h>
+#include <errno.h>
+
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/param.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <pwd.h>
+
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+#include <string>
+#include <vector>
+#include <map>
+#include <iostream>
 
 class RepoMonitor : public Thread
 {
@@ -13,46 +36,8 @@ public:
      * Update repository information and return thre repoId, otherwise empty 
      * string.
      */
-    void updateRepo(const std::string &path) {
-        RepoControl repo = RepoControl(path);
-        RepoInfo info;
-
-        try {
-            repo.open();
-        } catch (SystemException &e) {
-            WARNING("Failed to open repository %s: %s", path.c_str(), e.what());
-            return;
-        }
-
-        RWKey::sp key = infoLock.writeLock();
-        if (MDS::get()->myInfo.hasRepo(repo.getUUID())) {
-            info = MDS::get()->myInfo.getRepo(repo.getUUID());
-        } else {
-            info = RepoInfo(repo.getUUID(), repo.getPath());
-        }
-        info.updateHead(repo.getHead());
-        MDS::get()->myInfo.updateRepo(repo.getUUID(), info);
-
-        LOG("Checked %s: %s %s", path.c_str(), repo.getHead().c_str(), repo.getUUID().c_str());
-        
-        repo.close();
-
-        return;
-    }
-    void run() {
-        std::list<std::string> repos = MDS::get()->rc.getRepos();
-        std::list<std::string>::iterator it;
-
-        while (!interruptionRequested()) {
-            for (it = repos.begin(); it != repos.end(); it++) {
-                updateRepo(*it);
-            }
-
-            sleep(MDS_MONINTERVAL);
-        }
-
-        DLOG("RepoMonitor exited!");
-    }
+    void updateRepo(const std::string &path);
+    void run();
 };
 
 #endif

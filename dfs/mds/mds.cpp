@@ -1,5 +1,8 @@
 
 #include "mds.h"
+#include "message.hpp"
+#include "server.h"
+
 
 MDS* MDS::mds = 0;
 
@@ -15,8 +18,38 @@ MDS::MDS() : Thread()
     // XXX: Update addresses periodically
     myInfo.setHost(OriStr_Join(OriNet_GetAddrs(), ','));
 
-    OriPriv * priv = GetOriPriv();
+    // XXX get mypaths from file
+    std::string home = Util_GetHome();
+	ASSERT(home != "");
+	if (!OriFile_Exists(home + "/.ori"))
+		OriFile_MkDir(home + "/.ori");
+	metafile = home + MDS_METAFILE;
+	if (OriFile_Exists(metafile))
+	{
+		load();
+	}
 
+}
+
+MDS::~MDS()
+{
+	save();
+    delete server::instance();
+}
+
+void Httpd_getRoot(struct evhttp_request *req, void *arg)
+{
+    struct evbuffer *buf;
+
+    buf = evbuffer_new();
+    if (buf == NULL) {
+        evhttp_send_error(req, HTTP_INTERNAL, "Internal Error");
+        return;
+    }
+
+    evbuffer_add_printf(buf, "Temporary String");
+    evhttp_add_header(req->output_headers, "Content-Type", "text/html");
+    evhttp_send_reply(req, HTTP_OK, "OK", buf);
 }
 
 int MDS::start_server()
@@ -45,7 +78,7 @@ int MDS::start_server()
     return 0;
 }
 
-int MDS::unlink(const std::string &path)
+int MDS::mds_unlink(const std::string &path, bool fromFUSE)
 {
 	OriPriv *priv = GetOriPriv();
 
@@ -76,10 +109,28 @@ int MDS::unlink(const std::string &path)
 
 	priv->journal("unlink", path);
 
+	if(!fromFUSE) return 0;
+
+	MessagePtr msg = boost::shared_ptr<CMessage>(new CMessage());
+	msg->cmd_ = "unlink";
+	msg->path_from_ = path;
+	if(is_master(path))
+	{
+		mypaths.erase(path);
+		// XXX send update
+		msg->m_type = Update;
+	}
+	else
+	{
+		// XXX send request
+		msg->m_type = Request;
+	}
+	server::instance()->send(msg);
+
 	return 0;
 }
 
-int MDS::symlink(const std::string &target_path, const std::string &link_path)
+int MDS::mds_symlink(const std::string &target_path, const std::string &link_path, bool fromFUSE)
 {
 	OriPriv *priv = GetOriPriv();
 	OriDir *parentDir;
@@ -108,10 +159,29 @@ int MDS::symlink(const std::string &target_path, const std::string &link_path)
 
 	parentDir->add(OriFile_Basename(link_path), info->id);
 
+	if(!fromFUSE) return 0;
+
+	MessagePtr msg = boost::shared_ptr<CMessage>(new CMessage());
+	msg->cmd_ = "symlink";
+	msg->path_from_ = target_path;
+	msg->path_to_ = link_path;
+	if(is_master(link_path))
+	{
+		mypaths.insert(target_path);
+		// XXX send update
+		msg->m_type = Update;
+	}
+	else
+	{
+		// XXX send request
+		msg->m_type = Request;
+	}
+	server::instance()->send(msg);
+
 	return 0;
 }
 
-int MDS::readlink(const std::string &path, char* buf, size_t size)
+int MDS::mds_readlink(const std::string &path, char* buf, size_t size)
 {
 	OriPriv *priv = GetOriPriv();
 	OriFileInfo *info;
@@ -127,12 +197,12 @@ int MDS::readlink(const std::string &path, char* buf, size_t size)
 		return -e.getErrno();
 	}
 
-	std::memcpy(buf, info->link.c_str(), MIN(info->link.length() + 1, size));
+	memcpy(buf, info->link.c_str(), MIN(info->link.length() + 1, size));
 
 	return 0;
 }
 
-int MDS::rename(const std::string &from_path, const std::string &to_path)
+int MDS::mds_rename(const std::string &from_path, const std::string &to_path, bool fromFUSE)
 {
     OriPriv *priv = GetOriPriv();
 
@@ -166,7 +236,7 @@ int MDS::rename(const std::string &from_path, const std::string &to_path)
         // XXX: Need to support renaming directories (nlink, OriPriv::Rename)
         if (info->isDir()) {
             FUSE_LOG("ori_rename: Directory rename attempted %s to %s",
-                     from_path, to_path);
+                     from_path.c_str(), to_path.c_str());
             return -EINVAL;
         }
 
@@ -180,10 +250,29 @@ int MDS::rename(const std::string &from_path, const std::string &to_path)
     journalArg += to_path;
     priv->journal("rename", journalArg);
 
+    if(!fromFUSE) return 0;
+
+	MessagePtr msg = boost::shared_ptr<CMessage>(new CMessage());
+	msg->cmd_ = "rename";
+	msg->path_from_ = from_path;
+	msg->path_to_ = to_path;
+    if(is_master(from_path))
+    {
+    	mypaths.insert(to_path);
+    	// XXX send update
+    	msg->m_type = Update;
+    }
+    else
+    {
+    	// XXX send request
+    	msg->m_type = Request;
+    }
+    server::instance()->send(msg);
+
     return 0;
 }
 
-int MDS::mkdir(const std::string &path, mode_t mode)
+int MDS::mds_mkdir(const std::string &path, mode_t mode, bool fromFUSE)
 {
     OriPriv *priv = GetOriPriv();
 
@@ -201,10 +290,21 @@ int MDS::mkdir(const std::string &path, mode_t mode)
 
     priv->journal("mkdir", path);
 
+    if(!fromFUSE) return 0;
+
+    mypaths.insert(path);
+
+	MessagePtr msg = boost::shared_ptr<CMessage>(new CMessage());
+	msg->cmd_ = "rename";
+	msg->path_from_ = path;
+	msg->mode_ = mode;
+	msg->m_type = Update;
+	server::instance()->send(msg);
+
     return 0;
 }
 
-int MDS::rmdir(const std::string &path)
+int MDS::mds_rmdir(const std::string &path, bool fromFUSE)
 {
     OriPriv *priv = GetOriPriv();
 
@@ -236,23 +336,45 @@ int MDS::rmdir(const std::string &path)
 
     priv->journal("rmdir", path);
 
+    if(!fromFUSE) return 0;
+
+	MessagePtr msg = boost::shared_ptr<CMessage>(new CMessage());
+	msg->cmd_ = "rmdir";
+	msg->path_from_ = path;
+    if(is_master(path))
+    {
+    	mypaths.erase(path);
+    	// XXX send change
+    	msg->m_type = Update;
+    }
+    else
+    {
+    	// XXX send request
+    	msg->m_type = Request;
+    }
+    server::instance()->send(msg);
+
     return 0;
 }
 
-/*
- * Main control entry point that dispatches to the various MDS request.
- */
-std::string MDS::process(const std::string &data)
+
+
+void MDS::save() const
 {
-    std::string cmd;
-    strstream str = strstream(data);
-
-    str.readPStr(cmd);
-
-    if (cmd == "is_master")
-        return req_is_master(str);
-
-
-    // Makes debugging easier when a bad request comes in
-    return "UNSUPPORTED REQUEST";
+	if(metafile != "")
+	{
+		std::ofstream ofs(metafile);
+		assert(ofs.good());
+		boost::archive::xml_oarchive oa(ofs);
+		oa << BOOST_SERIALIZATION_NVP(mypaths);
+	}
 }
+
+void MDS::load()
+{
+	std::ifstream ifs(metafile);
+	assert(ifs.good());
+	boost::archive::xml_iarchive ia(ifs);
+	ia >> BOOST_SERIALIZATION_NVP(mypaths);
+}
+
