@@ -367,6 +367,7 @@ void MDS::save() const
 		assert(ofs.good());
 		boost::archive::xml_oarchive oa(ofs);
 		oa << BOOST_SERIALIZATION_NVP(mypaths);
+		oa << BOOST_SERIALIZATION_NVP(masters);
 	}
 }
 
@@ -376,5 +377,6 @@ void MDS::load()
 	assert(ifs.good());
 	boost::archive::xml_iarchive ia(ifs);
 	ia >> BOOST_SERIALIZATION_NVP(mypaths);
+	ia >> BOOST_SERIALIZATION_NVP(masters);
 }
 

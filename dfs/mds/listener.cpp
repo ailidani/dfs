@@ -138,7 +138,7 @@ void Listener::run()
         }
         parse(buf, len, &srcAddr);
 
-        //dumpHosts();
+        dumpHosts();
     }
 
     DLOG("Listener exited!");
