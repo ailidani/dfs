@@ -57,6 +57,7 @@ protected:
 	//boost::asio::io_service & io_service_;
 	udp_connection_ptr conn_;
 	std::set<udp::endpoint> sender_endpoints_;
+	udp::endpoint endpoint_;
 	std::vector<MessagePtr> messages_;
 
 private:

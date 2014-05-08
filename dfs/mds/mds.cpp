@@ -58,8 +58,8 @@ int MDS::start_server()
 
     announcer->start();
     listener->start();
-    repoMonitor->start();
-    syncer->start();
+    //repoMonitor->start();
+    //syncer->start();
 
     struct event_base *base = event_base_new();
     struct evhttp *httpd = evhttp_new(base);
@@ -295,7 +295,7 @@ int MDS::mds_mkdir(const std::string &path, mode_t mode, bool fromFUSE)
     mypaths.insert(path);
 
 	MessagePtr msg = boost::shared_ptr<CMessage>(new CMessage());
-	msg->cmd_ = "rename";
+	msg->cmd_ = "mkdir";
 	msg->path_from_ = path;
 	msg->mode_ = mode;
 	msg->m_type = Update;

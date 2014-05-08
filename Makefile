@@ -36,7 +36,12 @@ all:
 	$(CC) $(LDFLAGS) $(INCLUDE) $(CPP_FLAGS) libdfs.a dfssync/*.cpp -o bin/dfssync
 	$(CC) $(LDFLAGS) $(INCLUDE) $(CPP_FLAGS) libdfs.a mds/*.cpp -o bin/mds
 
-
+mds:
+	$(CC) $(INCLUDE) $(CPP_FLAGS) -c dfs/mds/*.cpp dfs/mds/*.hpp
+	$(C) $(INCLUDE) $(C_FLAGS) -c $(C_SOURCES)
+	ar rcs libdfs.a *.o
+	rm *.o
+	$(CC) $(LDFLAGS) $(INCLUDE) $(CPP_FLAGS) libdfs.a dfs/*.cpp -o bin/dfs
 
 ##==========================================================================
 clean:

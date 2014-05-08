@@ -55,6 +55,7 @@ public:
 
     archive << BOOST_SERIALIZATION_NVP(t);
     outbound_data_ = archive_stream.str();
+    std::cout<< "MESSAGE: " << outbound_data_ <<std::endl;
 
     // Format the header.
     std::ostringstream header_stream;
@@ -94,6 +95,7 @@ public:
     		boost::bind(
     				f, this, boost::asio::placeholders::error, sender_endpoint,
     				boost::ref(t), boost::make_tuple(handler)));
+    std::cout << "DEBUG: in connection async_recv_from, inbound_data_: " <<std::endl;
   }
 
   /// Handle a completed read of a message header. The handler is passed using
@@ -109,6 +111,7 @@ public:
     }
     else
     {
+    	std::cout<<"DEBUG: handle_read_data!!!" <<std::endl;
 		std::istringstream is(std::string(inbound_data_.begin(), inbound_data_.begin() + header_length));
 		std::size_t inbound_data_size = 0;
 		if (!(is >> std::hex >> inbound_data_size))
@@ -125,6 +128,7 @@ public:
 		// Extract the data structure from the data just received.
 		try
 		{
+			std::cout<<"DEBUG: trying to extract the data just received" <<std::endl;
 			std::istringstream archive_stream(archive_data);
 			boost::archive::xml_iarchive archive(archive_stream);
 

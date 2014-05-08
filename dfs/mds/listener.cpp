@@ -68,6 +68,7 @@ void Listener::parse(const char *buf, int len, sockaddr_in *source)
     // Message too small
     if (len < 32)
         return;
+    std::cout<<"message not too small"<<std::endl;
 
     // Cluster ID
     ctxt.assign(buf, 32);
@@ -86,14 +87,16 @@ void Listener::parse(const char *buf, int len, sockaddr_in *source)
         uint64_t ts = kv.getU64("time");
         if (ts > now + MDS_ADVSKEW || ts < now - MDS_ADVSKEW)
             return;
-
+        std::cout<<"time is fine"<<std::endl;
         // Ignore requests from self
         if (kv.getStr("hostId") == MDS::get()->rc.getUUID())
             return;
+        std::cout<<"not self"<<std::endl;
 
         // Ignore messages from other clusters
         if (kv.getStr("cluster") != MDS::get()->rc.getCluster())
             return;
+        std::cout<<"same cluster"<<std::endl;
 
         if (!inet_ntop(AF_INET, &(source->sin_addr),
                        srcip, INET_ADDRSTRLEN)) {

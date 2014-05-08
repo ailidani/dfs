@@ -76,13 +76,13 @@
 // Messaging UDP port
 #define MDS_SERVER_PORT		5002
 // Advertisement interval
-#define MDS_ADVINTERVAL     5
+#define MDS_ADVINTERVAL     10
 // Reject advertisements with large time skew
-#define MDS_ADVSKEW         5
+#define MDS_ADVSKEW         50
 // Repository check interval
-#define MDS_MONINTERVAL     10
+#define MDS_MONINTERVAL     20
 // Sync interval
-#define MDS_SYNCINTERVAL    5
+#define MDS_SYNCINTERVAL    10
 
 #define MDS_LOGFILE         "/.ori/mds.log"
 #define MDS_CONFFILE		"/.ori/mds.conf"
