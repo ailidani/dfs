@@ -1,6 +1,7 @@
 
 #include "listener.h"
 #include "mds.h"
+#include "server.h"
 
 Listener::Listener() : Thread()
 {
@@ -56,6 +57,8 @@ void Listener::updateHost(KVSerializer &kv, const std::string &srcIp)
     }
     MDS::get()->hosts[hostId]->update(kv);
     MDS::get()->hosts[hostId]->setPreferredIp(srcIp);
+
+    server::instance()->add_peer(hostId);
 }
 
 void Listener::parse(const char *buf, int len, sockaddr_in *source)

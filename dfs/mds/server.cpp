@@ -2,53 +2,18 @@
 
 #include "server.h"
 
-boost::asio::io_service server::io_service_;
+boost::asio::io_service server::io_service;
 
 server * server::server_ = 0;
 
 server::server()
+	: peer(MDS::get()->myInfo.getHostId())
 {
-	conn_ = udp_connection_ptr( new udp_connection(io_service_, MDS_SERVER_PORT));
-	BOOST_FOREACH(udp::endpoint peer, sender_endpoints_)
-	{
-		conn_->async_receive_from(messages_, peer,
-				boost::bind(&server::handle_message, this,
-				boost::asio::placeholders::error));
-	}
+	conn = boost::shared_ptr<udp_connection>(new udp_connection(io_service, MDS_SERVER_PORT));
+	endpoint = conn->socket().local_endpoint();
 }
 
-void server::send(MessagePtr p_msg)
-{
-	std::vector<MessagePtr> msgs;
-	msgs.push_back(p_msg);
-	std::map<std::string, HostInfo *>::iterator it;
-	std::cout<<"about to send message: " << p_msg->cmd_ <<std::endl;
-	for(it = MDS::get()->hosts.begin(); it!=MDS::get()->hosts.end(); it++)
-	{
-		try {
-			udp::resolver resolver(io_service_);
-			udp::resolver::query query(udp::v4(), it->second->getPreferredIp(), std::to_string(MDS_SERVER_PORT));
-			std::cout<<" to server: " <<it->second->getPreferredIp() << std::endl;
-			udp::resolver::iterator iterator = resolver.resolve(query);
-			sender_endpoints_.insert(*iterator);
-			endpoint_ = *iterator;
-		} catch ( const std::exception &e ) {
-			FUSE_LOG("server Error: %s", e.what());
-		}
-	}
-	std::set<udp::endpoint>::iterator iterator;
-	try {
-		//for(iterator=sender_endpoints_.begin(); iterator!=sender_endpoints_.end(); iterator++)
-		//{
-			conn_->async_send_to(msgs, endpoint_ ,
-					boost::bind(&server::handle_write, this,
-							boost::asio::placeholders::error));
-		//}
-	} catch (std::exception &e) {
-			FUSE_LOG("server send Error: %s", e.what());
-	}
-}
-
+/*
 void server::handle_write(const boost::system::error_code & err)
 {
 	if(!err)
@@ -67,12 +32,52 @@ void server::handle_write(const boost::system::error_code & err)
 	// Since we are not starting a new operation the io_service will run out of
 	// work to do and the client will exit.
 }
+*/
+
+void server::run()
+{
+	PeerPtr self(this);
+	peers.insert(self);
+	try {
+		conn->async_receive_from(messages, RemoteEndpoint,
+				boost::bind(&server::handle_message, this,
+				boost::asio::placeholders::error));
+		io_service.run();
+	} catch (const std::exception &e) {
+		std::cerr << e.what() << std::endl;
+	}
+}
+
+void server::add_peer(const std::string & hostID)
+{
+	if(hostID == MDS::get()->myInfo.getHostId())
+		return;
+	PeerPtr tmp;
+	try {
+		tmp.reset(new peer(io_service, hostID));
+		peers.insert(tmp);
+	} catch (boost::system::system_error &e) {
+		if(e.code() == boost::asio::error::host_not_found)
+			std::cout << hostID << "Host not found." << std::endl;
+		else throw e;
+	}
+}
+
+void server::send_msg(MessagePtr msg)
+{
+	BOOST_FOREACH(PeerPtr p, peers)
+	{
+		if(p->host_id == MDS::get()->myInfo.getHostId())
+			continue;
+		p->send(msg);
+	}
+}
 
 void server::handle_message( const boost::system::error_code& err )
 {
 	if(!err)
 	{
-		BOOST_FOREACH(MessagePtr msg, messages_)
+		BOOST_FOREACH(MessagePtr msg, messages)
 		{
 			std::cout<<"DEBUG: handle_msg : "<< msg->cmd_ <<std::endl;
 			process_message(msg);
@@ -80,10 +85,10 @@ void server::handle_message( const boost::system::error_code& err )
 	}
 	else throw boost::system::system_error(err);
 
-	std::set<udp::endpoint>::iterator it;
-		conn_->async_receive_from(messages_, endpoint_ ,
-							boost::bind(&server::handle_message, this,
-							boost::asio::placeholders::error));
+	// restart listen
+	conn->async_receive_from(messages, RemoteEndpoint ,
+						boost::bind(&server::handle_message, this,
+						boost::asio::placeholders::error));
 }
 
 void server::process_message(MessagePtr message)

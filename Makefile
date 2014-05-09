@@ -35,6 +35,7 @@ all:
 	$(CC) $(LDFLAGS) $(INCLUDE) $(CPP_FLAGS) libdfs.a dfs/*.cpp -o bin/dfs
 	$(CC) $(LDFLAGS) $(INCLUDE) $(CPP_FLAGS) libdfs.a dfssync/*.cpp -o bin/dfssync
 	$(CC) $(LDFLAGS) $(INCLUDE) $(CPP_FLAGS) libdfs.a mds/*.cpp -o bin/mds
+	$(CC) $(LDFLAGS) $(INCLUDE) $(CPP_FLAGS) libdfs.a dfs/logging.cpp dfs/oricmd.cpp dfs/oripriv.cpp dfs/server.cpp test/udp_test.cpp -o bin/udp_test
 
 mds:
 	$(CC) $(INCLUDE) $(CPP_FLAGS) -c dfs/mds/*.cpp dfs/mds/*.hpp

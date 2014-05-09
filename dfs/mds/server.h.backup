@@ -1,0 +1,91 @@
+
+
+#ifndef mds_server_h
+#define mds_server_h
+
+#include <cstdlib>
+#include <iostream>
+#include <sstream>
+#include <set>
+#include <boost/bind.hpp>
+#include <boost/asio.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/shared_ptr.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+
+#include <boost/tuple/tuple.hpp>
+#include <iomanip>
+#include <string>
+#include <vector>
+#include <boost/foreach.hpp>
+#include "mds.h"
+#include "udp_connection.hpp"
+#include "message.hpp"
+
+
+using boost::asio::ip::udp;
+
+class CMessage;
+typedef boost::shared_ptr<CMessage> MessagePtr;
+
+class udp_connection;
+typedef boost::shared_ptr<udp_connection> udp_connection_ptr;
+
+class server
+{
+public:
+	static boost::asio::io_service io_service_;
+	server();
+	~server() {};
+	static server* instance()
+	{
+		if(server_ == 0)
+		{
+			server_ = new server();
+		}
+		return server_;
+	}
+	void run()
+	{
+		io_service_.run();
+	}
+
+	void send(MessagePtr p_msg);
+	void handle_receive_from(const boost::system::error_code& error,
+	      size_t bytes_recvd);
+	void process_message(MessagePtr message);
+
+protected:
+	//boost::asio::io_service & io_service_;
+	//udp_connection_ptr conn_;
+	std::set<udp::endpoint> sender_endpoints_;
+	udp::endpoint endpoint_;
+	std::vector<MessagePtr> messages_;
+	/// The underlying socket.
+	boost::asio::ip::tcp::socket socket_;
+
+	/// The size of a fixed length header.
+	enum { header_length = 8 };
+	/// Holds an outbound header.
+	std::string outbound_header_;
+	/// Holds the outbound data.
+	std::string outbound_data_;
+	/// Holds an inbound header.
+	char inbound_header_[header_length];
+	/// Holds the inbound data.
+	std::vector<char> inbound_data_;
+	enum { max_length = 1024 };
+	char data_[max_length];
+
+private:
+	static server* server_;
+};
+
+typedef boost::shared_ptr<server> server_ptr;
+
+#endif
+

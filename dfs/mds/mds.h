@@ -105,17 +105,7 @@ public:
 		return mds;
 	}
 	~MDS();
-	void run()
-	{
-		std::string oriHome = Util_GetHome() + "/.ori";
-		if (!OriFile_Exists(oriHome))
-			OriFile_MkDir(oriHome);
-		// Chdir so that coredumps are placed in ~/.ori
-		chdir(oriHome.c_str());
-		dfs_open_log(Util_GetHome() + MDS_LOGFILE);
-
-		start_server();
-	}
+	void run();
 	int start_server();
 
 	int mds_unlink(const std::string &path, bool fromFUSE);
@@ -134,13 +124,13 @@ public:
 protected:
 	MDS();
 
-	bool is_master(std::string path)
+	inline bool is_master(std::string path)
 	{
 		std::set<std::string>::iterator it;
 		it = mypaths.find(path);
 		return it != mypaths.end();
 	}
-	HostInfo * get_current_master(std::string path)
+	inline HostInfo * get_current_master(std::string path)
 	{
 		MasterMap::iterator it;
 		it = masters.find(path);

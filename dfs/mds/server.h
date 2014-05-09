@@ -1,6 +1,6 @@
 
-#ifndef mds_server_hpp
-#define mds_server_hpp
+#ifndef mds_server_h
+#define mds_server_h
 
 #include <cstdlib>
 #include <iostream>
@@ -14,25 +14,18 @@
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/foreach.hpp>
-#include "mds.h"
-#include "udp_connection.hpp"
+
+#include "peer.hpp"
 #include "message.hpp"
 
 
 using boost::asio::ip::udp;
 
-class CMessage;
-typedef boost::shared_ptr<CMessage> MessagePtr;
 
-class udp_connection;
-typedef boost::shared_ptr<udp_connection> udp_connection_ptr;
-
-
-class server
+class server : public peer
 {
 public:
-	static boost::asio::io_service io_service_;
-	server();
+	static boost::asio::io_service io_service;
 	~server() {};
 	static server* instance()
 	{
@@ -42,28 +35,25 @@ public:
 		}
 		return server_;
 	}
-	void run()
-	{
-		io_service_.run();
-	}
+	void run();
 
-	void send(MessagePtr p_msg);
-	void handle_write(const boost::system::error_code & err);
+	//void handle_write(const boost::system::error_code & err);
 	/// Handle completion of a read operation.
 	void handle_message( const boost::system::error_code& err );
 	void process_message(MessagePtr message);
+	void send_msg(MessagePtr msg);
+	void add_peer(const std::string & hostID);
 
 protected:
-	//boost::asio::io_service & io_service_;
-	udp_connection_ptr conn_;
-	std::set<udp::endpoint> sender_endpoints_;
-	udp::endpoint endpoint_;
-	std::vector<MessagePtr> messages_;
+	server();
+	PeerSet peers;
+	std::vector<MessagePtr> messages;
+	boost::asio::ip::udp::endpoint RemoteEndpoint;
 
 private:
 	static server* server_;
 };
 
-typedef boost::shared_ptr<server> server_ptr;
+//typedef boost::shared_ptr<server> server_ptr;
 
 #endif /* mds_server_hpp */

@@ -71,7 +71,6 @@ static void* ori_init(struct fuse_conn_info *conn)
 
     FUSE_LOG("Metadata Service starting ...");
     MDS::get()->start();
-    server::instance()->run();
 
     return priv;
 }

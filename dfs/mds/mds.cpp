@@ -37,6 +37,18 @@ MDS::~MDS()
     delete server::instance();
 }
 
+void MDS::run()
+{
+	std::string oriHome = Util_GetHome() + "/.ori";
+	if (!OriFile_Exists(oriHome))
+		OriFile_MkDir(oriHome);
+	// Chdir so that coredumps are placed in ~/.ori
+	chdir(oriHome.c_str());
+	dfs_open_log(Util_GetHome() + MDS_LOGFILE);
+
+	start_server();
+}
+
 void Httpd_getRoot(struct evhttp_request *req, void *arg)
 {
     struct evbuffer *buf;
@@ -60,6 +72,7 @@ int MDS::start_server()
     listener->start();
     //repoMonitor->start();
     //syncer->start();
+    server::instance()->run();
 
     struct event_base *base = event_base_new();
     struct evhttp *httpd = evhttp_new(base);
@@ -125,7 +138,7 @@ int MDS::mds_unlink(const std::string &path, bool fromFUSE)
 		// XXX send request
 		msg->m_type = Request;
 	}
-	server::instance()->send(msg);
+	server::instance()->send_msg(msg);
 
 	return 0;
 }
@@ -176,7 +189,7 @@ int MDS::mds_symlink(const std::string &target_path, const std::string &link_pat
 		// XXX send request
 		msg->m_type = Request;
 	}
-	server::instance()->send(msg);
+	server::instance()->send_msg(msg);
 
 	return 0;
 }
@@ -267,7 +280,7 @@ int MDS::mds_rename(const std::string &from_path, const std::string &to_path, bo
     	// XXX send request
     	msg->m_type = Request;
     }
-    server::instance()->send(msg);
+    server::instance()->send_msg(msg);
 
     return 0;
 }
@@ -299,7 +312,7 @@ int MDS::mds_mkdir(const std::string &path, mode_t mode, bool fromFUSE)
 	msg->path_from_ = path;
 	msg->mode_ = mode;
 	msg->m_type = Update;
-	server::instance()->send(msg);
+	server::instance()->send_msg(msg);
 
     return 0;
 }
@@ -352,7 +365,7 @@ int MDS::mds_rmdir(const std::string &path, bool fromFUSE)
     	// XXX send request
     	msg->m_type = Request;
     }
-    server::instance()->send(msg);
+    server::instance()->send_msg(msg);
 
     return 0;
 }

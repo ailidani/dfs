@@ -1,0 +1,24 @@
+
+
+#include "server.h"
+
+boost::asio::io_service server::io_service_;
+
+server * server::server_ = 0;
+
+server::server()
+	: socket_(io_service_, udp::endpoint(udp::v4(), MDS_SERVER_PORT))
+{
+	BOOST_FOREACH(udp::endpoint peer, sender_endpoints_)
+	{
+		socket_.async_receive_from(inbound_data_, peer,
+				boost::bind(&server::handle_receive_from, this,
+				boost::asio::placeholders::error));
+	}
+}
+
+void server::handle_receive_from(const boost::system::error_code& error,
+	      size_t bytes_recvd)
+{
+
+}
