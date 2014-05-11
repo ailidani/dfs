@@ -33,15 +33,21 @@ public:
 	CMessage() :
 		m_type(INVALID_TYPE),
 		m_seq(0),
+		m_group(0),
 		m_source(0),
-		m_ResponseType(INVALID_TYPE)
+		m_ResponseType(INVALID_TYPE),
+		m_Response(No),
+		mode_(0)
 		{
 		};
 	CMessage( int p_src ) :
 		m_type(INVALID_TYPE),
 		m_seq(0),
+		m_group(0),
 		m_source( p_src ),
-		m_ResponseType(INVALID_TYPE)
+		m_ResponseType(INVALID_TYPE),
+		m_Response(No),
+		mode_(0)
 		{ };
 
 	virtual ~CMessage() { };

@@ -95,7 +95,8 @@ public:
     		boost::bind(
     				f, this, boost::asio::placeholders::error, sender_endpoint,
     				boost::ref(t), boost::make_tuple(handler)));
-    std::cout << "DEBUG: in connection async_recv_from, inbound_data_: " <<std::endl;
+    std::cout << "DEBUG: in connection async_recv_from"<<sender_endpoint.address().to_string()<<", inbound_data_: "
+    		<<std::endl;
   }
 
   /// Handle a completed read of a message header. The handler is passed using
@@ -128,7 +129,7 @@ public:
 		// Extract the data structure from the data just received.
 		try
 		{
-			std::cout<<"DEBUG: trying to extract the data just received" <<std::endl;
+			std::cout<<"DEBUG: trying to extract the data just received:" << archive_data <<std::endl;
 			std::istringstream archive_stream(archive_data);
 			boost::archive::xml_iarchive archive(archive_stream);
 

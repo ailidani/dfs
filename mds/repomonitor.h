@@ -25,13 +25,13 @@ public:
         }
 
         RWKey::sp key = infoLock.writeLock();
-        if (MDS::get()->myInfo.hasRepo(repo.getUUID())) {
-            info = MDS::get()->myInfo.getRepo(repo.getUUID());
+        if (MDS::instance()->myInfo.hasRepo(repo.getUUID())) {
+            info = MDS::instance()->myInfo.getRepo(repo.getUUID());
         } else {
             info = RepoInfo(repo.getUUID(), repo.getPath());
         }
         info.updateHead(repo.getHead());
-        MDS::get()->myInfo.updateRepo(repo.getUUID(), info);
+        MDS::instance()->myInfo.updateRepo(repo.getUUID(), info);
 
         LOG("Checked %s: %s %s", path.c_str(), repo.getHead().c_str(), repo.getUUID().c_str());
         
@@ -40,7 +40,7 @@ public:
         return;
     }
     void run() {
-        std::list<std::string> repos = MDS::get()->rc.getRepos();
+        std::list<std::string> repos = MDS::instance()->rc.getRepos();
         std::list<std::string>::iterator it;
 
         while (!interruptionRequested()) {

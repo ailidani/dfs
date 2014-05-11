@@ -6,7 +6,7 @@ C=gcc
 CPP_FLAGS=-std=c++0x -D_FILE_OFFSET_BITS=64 -O0 -DDEBUG
 C_FLAGS=-O0 -DDEBUG
 
-LDFLAGS=-L/usr/local/lib/ -L/opt/local/lib/ -lz -levent -losxfuse -lssl -lresolv -lcrypto -llzma -lboost_iostreams-mt -lboost_serialization-mt -lboost_system-mt
+LDFLAGS=-L/usr/local/lib/ -L/opt/local/lib/ -lz -levent -losxfuse -lssl -lresolv -lcrypto -llzma -lboost_iostreams-mt -lboost_serialization-mt -lboost_system-mt -lpthread
 
 INCLUDE=-I"/Users/eddieaili/Documents/workspace/dfs" -I/opt/local/include -I/usr/local/include/osxfuse
 
@@ -35,7 +35,7 @@ all:
 	$(CC) $(LDFLAGS) $(INCLUDE) $(CPP_FLAGS) libdfs.a dfs/*.cpp -o bin/dfs
 	$(CC) $(LDFLAGS) $(INCLUDE) $(CPP_FLAGS) libdfs.a dfssync/*.cpp -o bin/dfssync
 	$(CC) $(LDFLAGS) $(INCLUDE) $(CPP_FLAGS) libdfs.a mds/*.cpp -o bin/mds
-	$(CC) $(LDFLAGS) $(INCLUDE) $(CPP_FLAGS) libdfs.a dfs/logging.cpp dfs/oricmd.cpp dfs/oripriv.cpp dfs/server.cpp test/udp_test.cpp -o bin/udp_test
+	#$(CC) $(LDFLAGS) $(INCLUDE) $(CPP_FLAGS) libdfs.a dfs/logging.cpp dfs/oricmd.cpp dfs/oripriv.cpp dfs/server.cpp test/udp_test.cpp -o bin/udp_test
 
 mds:
 	$(CC) $(INCLUDE) $(CPP_FLAGS) -c dfs/mds/*.cpp dfs/mds/*.hpp

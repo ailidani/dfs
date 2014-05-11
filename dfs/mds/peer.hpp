@@ -27,6 +27,8 @@ BOOST_CLASS_EXPORT(CAccept);
 
 using boost::asio::ip::udp;
 
+extern MDS* mds;
+
 class CMessage;
 typedef boost::shared_ptr<CMessage> MessagePtr;
 
@@ -49,7 +51,7 @@ public:
 	{
 		conn = udp_connection_ptr(new udp_connection(ios, 0));
 		udp::resolver resolver(ios);
-		std::string ip = MDS::get()->hosts.find(hostID)->second->getPreferredIp();
+		std::string ip = mds->hosts.find(hostID)->second->getPreferredIp();
 		std::string port = std::to_string(MDS_SERVER_PORT);
 		udp::resolver::query query(udp::v4(), ip, port);
 		try {

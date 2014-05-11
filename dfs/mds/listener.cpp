@@ -3,6 +3,8 @@
 #include "mds.h"
 #include "server.h"
 
+extern MDS* mds;
+
 Listener::Listener() : Thread()
 {
     int status;
@@ -46,17 +48,17 @@ Listener::Listener() : Thread()
 
 void Listener::updateHost(KVSerializer &kv, const std::string &srcIp)
 {
-    RWKey::sp key = MDS::get()->hostsLock.writeLock();
+    RWKey::sp key = mds->hostsLock.writeLock();
     std::map<std::string, HostInfo *>::iterator it;
     std::string hostId = kv.getStr("hostId");
 
     // Update
-    it = MDS::get()->hosts.find(hostId);
-    if (it == MDS::get()->hosts.end()) {
-    	MDS::get()->hosts[hostId] = new HostInfo(hostId, kv.getStr("cluster"));
+    it = mds->hosts.find(hostId);
+    if (it == mds->hosts.end()) {
+    	mds->hosts[hostId] = new HostInfo(hostId, kv.getStr("cluster"));
     }
-    MDS::get()->hosts[hostId]->update(kv);
-    MDS::get()->hosts[hostId]->setPreferredIp(srcIp);
+    mds->hosts[hostId]->update(kv);
+    mds->hosts[hostId]->setPreferredIp(srcIp);
 
     server::instance()->add_peer(hostId);
 }
@@ -76,11 +78,11 @@ void Listener::parse(const char *buf, int len, sockaddr_in *source)
     // Cluster ID
     ctxt.assign(buf, 32);
     ctxt[31] = '\0';
-    if (strncmp(ctxt.c_str(), MDS::get()->rc.getCluster().c_str(), 31) != 0)
+    if (strncmp(ctxt.c_str(), mds->rc.getCluster().c_str(), 31) != 0)
         return;
 
     ctxt.assign(buf+32, len-32);
-    ptxt = OriCrypt_Decrypt(ctxt, MDS::get()->rc.getKey());
+    ptxt = OriCrypt_Decrypt(ctxt, mds->rc.getKey());
     try {
         kv.fromBlob(ptxt);
         //kv.dump();
@@ -92,12 +94,12 @@ void Listener::parse(const char *buf, int len, sockaddr_in *source)
             return;
         std::cout<<"time is fine"<<std::endl;
         // Ignore requests from self
-        if (kv.getStr("hostId") == MDS::get()->rc.getUUID())
+        if (kv.getStr("hostId") == mds->rc.getUUID())
             return;
         std::cout<<"not self"<<std::endl;
 
         // Ignore messages from other clusters
-        if (kv.getStr("cluster") != MDS::get()->rc.getCluster())
+        if (kv.getStr("cluster") != mds->rc.getCluster())
             return;
         std::cout<<"same cluster"<<std::endl;
 
@@ -117,11 +119,11 @@ void Listener::parse(const char *buf, int len, sockaddr_in *source)
 
 void Listener::dumpHosts()
 {
-    RWKey::sp key = MDS::get()->hostsLock.readLock();
+    RWKey::sp key = mds->hostsLock.readLock();
     std::map<std::string, HostInfo *>::iterator it;
 
     std::cout << "=== Begin Hosts ===" << std::endl;
-    for (it = MDS::get()->hosts.begin(); it != MDS::get()->hosts.end(); it++) {
+    for (it = mds->hosts.begin(); it != mds->hosts.end(); it++) {
         std::cout << it->second->getHost() << std::endl;
     }
     std::cout << "==== End Hosts ====" << std::endl << std::endl;

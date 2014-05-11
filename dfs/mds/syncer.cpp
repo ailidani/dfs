@@ -3,6 +3,8 @@
 #include "syncer.h"
 #include "mds.h"
 
+extern MDS* mds;
+
 void Syncer::pullRepo(HostInfo &localHost,
         HostInfo &remoteHost,
         const std::string &uuid)
@@ -29,7 +31,7 @@ void Syncer::checkRepo(HostInfo &infoSnapshot, const std::string &uuid)
     std::map<std::string, HostInfo *>::iterator it;
     RepoInfo localInfo = infoSnapshot.getRepo(uuid);
 
-    hostSnapshot = MDS::get()->hosts;
+    hostSnapshot = mds->hosts;
 
     for (it = hostSnapshot.begin(); it != hostSnapshot.end(); it++) {
     	std::list<std::string> repos = it->second->listRepos();
@@ -52,7 +54,7 @@ void Syncer::run()
         std::list<std::string> repos;
         std::list<std::string>::iterator it;
 
-        infoSnapshot = MDS::get()->myInfo;
+        infoSnapshot = mds->myInfo;
         repos = infoSnapshot.listRepos();
 
         for (it = repos.begin(); it != repos.end(); it++) {

@@ -53,7 +53,7 @@
 #include <dfs/oripriv.h>
 
 #ifdef DEBUG
-#define FSCK_A_LOT
+//#define FSCK_A_LOT
 #endif
 
 #include "mdsconf.h"
@@ -88,7 +88,7 @@
 #define MDS_CONFFILE		"/.ori/mds.conf"
 #define MDS_METAFILE		"/.ori/mds.meta.xml"
 
-class MDS : public Thread
+class MDS
 {
 public:
 	friend class boost::serialization::access;
@@ -98,14 +98,17 @@ public:
 		ar & mypaths;
 		ar & masters;
 	}
-	static MDS* get()
+	/*
+	static MDS* instance()
 	{
 		if(mds == 0)
 			mds = new MDS;
 		return mds;
 	}
+	*/
+	MDS();
 	~MDS();
-	void run();
+	void init();
 	int start_server();
 
 	int mds_unlink(const std::string &path, bool fromFUSE);
@@ -122,8 +125,6 @@ public:
 	RWLock hostsLock;
 
 protected:
-	MDS();
-
 	inline bool is_master(std::string path)
 	{
 		std::set<std::string>::iterator it;
@@ -142,12 +143,12 @@ protected:
 	}
 
 private:
-	static MDS* mds;
+	//static MDS* mds;
 
 	Announcer *announcer;
 	Listener *listener;
-	RepoMonitor *repoMonitor;
-	Syncer *syncer;
+	//RepoMonitor *repoMonitor;
+	//Syncer *syncer;
 
 	std::set<std::string> mypaths;
 	typedef std::map<std::string, HostInfo *> MasterMap;

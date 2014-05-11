@@ -6,8 +6,10 @@ boost::asio::io_service server::io_service;
 
 server * server::server_ = 0;
 
+extern MDS* mds;
+
 server::server()
-	: peer(MDS::get()->myInfo.getHostId())
+	: peer(mds->myInfo.getHostId())
 {
 	conn = boost::shared_ptr<udp_connection>(new udp_connection(io_service, MDS_SERVER_PORT));
 	endpoint = conn->socket().local_endpoint();
@@ -50,7 +52,7 @@ void server::run()
 
 void server::add_peer(const std::string & hostID)
 {
-	if(hostID == MDS::get()->myInfo.getHostId())
+	if(hostID == mds->myInfo.getHostId())
 		return;
 	PeerPtr tmp;
 	try {
@@ -67,7 +69,7 @@ void server::send_msg(MessagePtr msg)
 {
 	BOOST_FOREACH(PeerPtr p, peers)
 	{
-		if(p->host_id == MDS::get()->myInfo.getHostId())
+		if(p->host_id == mds->myInfo.getHostId())
 			continue;
 		p->send(msg);
 	}
@@ -103,15 +105,17 @@ void server::process_message(MessagePtr message)
 	case Update:
 	case Request:
 		if(message->cmd_.compare("unlink") == 0)
-			MDS::get()->mds_unlink(message->path_from_, false);
+			mds->mds_unlink(message->path_from_, false);
 		else if(message->cmd_.compare("symlink") == 0)
-			MDS::get()->mds_symlink(message->path_from_, message->path_to_, false);
+			mds->mds_symlink(message->path_from_, message->path_to_, false);
 		else if(message->cmd_.compare("rename") == 0)
-			MDS::get()->mds_rename(message->path_from_, message->path_to_, false);
-		else if(message->cmd_.compare("mkdir") == 0)
-			MDS::get()->mds_mkdir(message->path_from_, message->mode_, false);
+			mds->mds_rename(message->path_from_, message->path_to_, false);
+		else if(message->cmd_.compare("mkdir") == 0) {
+			std::cout<<"Made it before MDS::get()->mds_mkdir()"<<std::endl;
+			mds->mds_mkdir(message->path_from_, message->mode_, false);
+		}
 		else if(message->cmd_.compare("rmdir") == 0)
-			MDS::get()->mds_rmdir(message->path_from_, false);
+			mds->mds_rmdir(message->path_from_, false);
 		else FUSE_LOG("process_message Error: Unknown command\n");
 		break;
 	case INVALID_TYPE:

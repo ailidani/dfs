@@ -4,15 +4,13 @@
 #include "server.h"
 
 
-MDS* MDS::mds = 0;
-
-MDS::MDS() : Thread()
+MDS::MDS()
 {
     rc = MDSConf();
     announcer = new Announcer();
     listener = new Listener();
-    repoMonitor = new RepoMonitor();
-    syncer = new Syncer();
+    //repoMonitor = new RepoMonitor();
+    //syncer = new Syncer();
 
     myInfo = HostInfo(rc.getUUID(), rc.getCluster());
     // XXX: Update addresses periodically
@@ -37,7 +35,7 @@ MDS::~MDS()
     delete server::instance();
 }
 
-void MDS::run()
+void MDS::init()
 {
 	std::string oriHome = Util_GetHome() + "/.ori";
 	if (!OriFile_Exists(oriHome))
@@ -288,15 +286,19 @@ int MDS::mds_rename(const std::string &from_path, const std::string &to_path, bo
 int MDS::mds_mkdir(const std::string &path, mode_t mode, bool fromFUSE)
 {
     OriPriv *priv = GetOriPriv();
+    std::cout<<"DEBUG: Made it after GetOriPriv()"<<std::endl;
 
 #ifdef FSCK_A_LOT
     priv->fsck();
 #endif /* FSCK_A_LOT */
 
     RWKey::sp lock = priv->nsLock.writeLock();
+    std::cout<<"DEBUG: Made it after wirteLock()"<<std::endl;
     try {
         OriFileInfo *info = priv->addDir(path);
+        std::cout<<"DEBUG: Made it after priv->addDir()"<<std::endl;
         info->statInfo.st_mode |= mode;
+        std::cout<<"DEBUG: Made it after info mode|="<<std::endl;
     } catch (SystemException e) {
         return -e.getErrno();
     }

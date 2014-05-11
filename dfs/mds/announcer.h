@@ -27,6 +27,7 @@
 #include <map>
 #include <iostream>
 
+
 class Announcer : public Thread
 {
 public:
@@ -39,6 +40,7 @@ public:
 private:
     int fd;
     struct sockaddr_in dstAddr;
+    struct sockaddr_in peer;
 };
 
 #endif

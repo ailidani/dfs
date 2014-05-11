@@ -9,16 +9,58 @@ server * server::server_ = 0;
 server::server()
 	: socket_(io_service_, udp::endpoint(udp::v4(), MDS_SERVER_PORT))
 {
-	BOOST_FOREACH(udp::endpoint peer, sender_endpoints_)
-	{
-		socket_.async_receive_from(inbound_data_, peer,
-				boost::bind(&server::handle_receive_from, this,
-				boost::asio::placeholders::error));
-	}
+	socket_.async_receive_from(
+			boost::asio::buffer(data_, max_length), sender_endpoint_,
+			boost::bind(&server::handle_receive_from, this,
+			boost::asio::placeholders::error));
 }
 
 void server::handle_receive_from(const boost::system::error_code& error,
 	      size_t bytes_recvd)
 {
+	if(!error && bytes_recvd > 0)
+	{
 
+	}
+	else
+	{
+		socket_.async_receive_from(
+          boost::asio::buffer(data_, max_length), sender_endpoint_,
+          boost::bind(&server::handle_receive_from, this,
+            boost::asio::placeholders::error,
+            boost::asio::placeholders::bytes_transferred));
+	}
 }
+
+void server::handle_send_to
+
+/// Asynchronously write a data structure to the socket.
+template <typename T, typename Handler>
+void server::async_write(const T& t, Handler handler)
+{
+    // Serialize the data first so we know how large it is.
+    std::ostringstream archive_stream;
+    boost::archive::text_oarchive archive(archive_stream);
+    archive << t;
+    outbound_data_ = archive_stream.str();
+
+    // Format the header.
+    std::ostringstream header_stream;
+    header_stream << std::setw(header_length)
+      << std::hex << outbound_data_.size();
+    if (!header_stream || header_stream.str().size() != header_length)
+    {
+      // Something went wrong, inform the caller.
+      boost::system::error_code error(boost::asio::error::invalid_argument);
+      socket_.get_io_service().post(boost::bind(handler, error));
+      return;
+    }
+    outbound_header_ = header_stream.str();
+
+    // Write the serialized data to the socket. We use "gather-write" to send
+    // both the header and the data in a single write operation.
+    std::vector<boost::asio::const_buffer> buffers;
+    buffers.push_back(boost::asio::buffer(outbound_header_));
+    buffers.push_back(boost::asio::buffer(outbound_data_));
+    boost::asio::async_write(socket_, buffers, handler);
+  }

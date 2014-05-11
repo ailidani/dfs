@@ -57,6 +57,7 @@ using namespace std;
 mount_ori_config config;
 RemoteRepo remoteRepo;
 OriPriv *priv;
+MDS* mds;
 
 // Mount/Unmount
 
@@ -70,7 +71,7 @@ static void* ori_init(struct fuse_conn_info *conn)
     priv->init();
 
     FUSE_LOG("Metadata Service starting ...");
-    MDS::get()->start();
+    mds->init();
 
     return priv;
 }
@@ -84,7 +85,7 @@ static void ori_destroy(void *userdata)
     priv->cleanup();
     delete priv;
 
-    delete MDS::get();
+    delete mds;
 
     FUSE_LOG("File system unmounted");
 }
@@ -107,7 +108,7 @@ static int ori_unlink(const char *path)
 		return -EACCES;
 	}
 
-    return MDS::get()->mds_unlink(path, true);
+    return mds->mds_unlink(path, true);
 }
 
 static int ori_symlink(const char *target_path, const char *link_path)
@@ -122,14 +123,14 @@ static int ori_symlink(const char *target_path, const char *link_path)
 
     FUSE_LOG("FUSE ori_symlink(path=\"%s\")", link_path);
 
-    return MDS::get()->mds_symlink(target_path, link_path, true);
+    return mds->mds_symlink(target_path, link_path, true);
 }
 
 static int ori_readlink(const char *path, char *buf, size_t size)
 {
     FUSE_LOG("FUSE ori_readlink(path\"%s\", size=%ld)", path, size);
 
-    return MDS::get()->mds_readlink(path, buf, size);
+    return mds->mds_readlink(path, buf, size);
 }
 
 static int ori_rename(const char *from_path, const char *to_path)
@@ -148,7 +149,7 @@ static int ori_rename(const char *from_path, const char *to_path)
         return -EACCES;
     }
 
-    return MDS::get()->mds_rename(from_path, to_path, true);
+    return mds->mds_rename(from_path, to_path, true);
 }
 
 // File IO
@@ -469,7 +470,7 @@ ori_mkdir(const char *path, mode_t mode)
         return -EACCES;
     }
 
-    return MDS::get()->mds_mkdir(path, mode, true);
+    return mds->mds_mkdir(path, mode, true);
 }
 
 static int
@@ -483,7 +484,7 @@ ori_rmdir(const char *path)
         return -EACCES;
     }
 
-    return MDS::get()->mds_rmdir(path, true);
+    return mds->mds_rmdir(path, true);
 }
 
 static int
@@ -1108,6 +1109,8 @@ int main(int argc, char *argv[])
 
     fuse_argv[fuse_argc] = fuse_mntpt;
     fuse_argc++;
+
+    mds = new MDS();
 
     int status = fuse_main(fuse_argc, fuse_argv, &ori_oper, NULL);
     if (status != 0) {

@@ -3,6 +3,8 @@
 #include "repomonitor.h"
 #include "mds.h"
 
+extern MDS* mds;
+
 void RepoMonitor::updateRepo(const std::string &path)
 {
     RepoControl repo = RepoControl(path);
@@ -15,14 +17,14 @@ void RepoMonitor::updateRepo(const std::string &path)
         return;
     }
 
-    RWKey::sp key = MDS::get()->infoLock.writeLock();
-    if (MDS::get()->myInfo.hasRepo(repo.getUUID())) {
-        info = MDS::get()->myInfo.getRepo(repo.getUUID());
+    RWKey::sp key = mds->infoLock.writeLock();
+    if (mds->myInfo.hasRepo(repo.getUUID())) {
+        info = mds->myInfo.getRepo(repo.getUUID());
     } else {
         info = RepoInfo(repo.getUUID(), repo.getPath());
     }
     info.updateHead(repo.getHead());
-    MDS::get()->myInfo.updateRepo(repo.getUUID(), info);
+    mds->myInfo.updateRepo(repo.getUUID(), info);
 
     LOG("Checked %s: %s %s", path.c_str(), repo.getHead().c_str(), repo.getUUID().c_str());
 
@@ -33,7 +35,7 @@ void RepoMonitor::updateRepo(const std::string &path)
 
 void RepoMonitor::run()
 {
-    std::list<std::string> repos = MDS::get()->rc.getRepos();
+    std::list<std::string> repos = mds->rc.getRepos();
     std::list<std::string>::iterator it;
 
     while (!interruptionRequested()) {

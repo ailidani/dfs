@@ -177,6 +177,7 @@ static int cmd_foreground(int argc, const char *argv[])
     dfs_open_log(Util_GetHome() + MDS_LOGFILE);
 
     //return start_server();
+    return 0;
 }
 
 int main(int argc, char *argv[])
