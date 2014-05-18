@@ -2,7 +2,7 @@
 #include "announcer.h"
 #include "mds.h"
 
-extern MDS* mds;
+extern MDS * mds;
 
 Announcer::Announcer() : Thread()
 {
@@ -28,15 +28,15 @@ Announcer::Announcer() : Thread()
 
 std::string Announcer::generate()
 {
-    RWKey::sp key = mds->infoLock.readLock();
+    RWKey::sp key = MDS::instance().infoLock.readLock();
     char buf[32];
     std::string msg;
 
     // First 31 bytes of cluster with null
     memset(buf, 0, 32);
-    strncpy(buf, mds->rc.getCluster().c_str(), 31);
+    strncpy(buf, MDS::instance().rc.getCluster().c_str(), 31);
     msg.assign(buf, 32);
-    msg.append(OriCrypt_Encrypt(mds->myInfo.getBlob(), mds->rc.getKey()));
+    msg.append(OriCrypt_Encrypt(MDS::instance().myInfo.getBlob(), MDS::instance().rc.getKey()));
 
     return msg;
 }
@@ -60,9 +60,9 @@ void Announcer::run()
 
         memset(&peer, 0, sizeof(peer));
 		peer.sin_family = AF_INET;
-		std::cout<<mds->rc.getHosts().front() <<std::endl;
-		peer.sin_addr.s_addr = inet_addr(mds->rc.getHosts().front().c_str());
-		peer.sin_port = htons(MDS_SERVER_PORT);
+		std::cout<<MDS::instance().rc.getHosts().front() <<std::endl;
+		peer.sin_addr.s_addr = inet_addr(MDS::instance().rc.getHosts().front().c_str());
+		peer.sin_port = htons(MDS_UDPPORT);
 
 		std::cout<<"In Announcer run() end of assign address...." <<std::endl;
 

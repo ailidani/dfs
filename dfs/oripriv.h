@@ -5,8 +5,8 @@
 
 #include <libdfsutil/dfsfile.h>
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/archive/xml_iarchive.hpp>
 #include <boost/serialization/list.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/map.hpp>
@@ -144,13 +144,14 @@ public:
             const std::string &origin = "",
             Repo *remoteRepo = NULL);
     ~OriPriv();
+    /*
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
     	ar & dirs;
     	ar & paths;
-    }
+    }*/
 
     // Repository Operations
     void reset();
@@ -224,6 +225,7 @@ private:
 };
 
 OriPriv *GetOriPriv();
+
 
 namespace boost {
 namespace serialization {

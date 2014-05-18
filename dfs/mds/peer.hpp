@@ -19,6 +19,7 @@ BOOST_CLASS_EXPORT(CReady);
 BOOST_CLASS_EXPORT(CAccept);
 */
 
+
 // Serialization and smart ptrs
 #include <boost/bind.hpp>
 #include <boost/serialization/string.hpp>
@@ -27,31 +28,30 @@ BOOST_CLASS_EXPORT(CAccept);
 
 using boost::asio::ip::udp;
 
-extern MDS* mds;
+//class CMessage;
+//typedef boost::shared_ptr<CMessage> MessagePtr;
 
-class CMessage;
-typedef boost::shared_ptr<CMessage> MessagePtr;
-
-class udp_connection;
-typedef boost::shared_ptr<udp_connection> udp_connection_ptr;
+//class udp_connection;
+//typedef boost::shared_ptr<udp_connection> udp_connection_ptr;
 
 class peer
 {
 public:
-	peer(std::string hostID)
+	peer(std::string ip)
 	{
-		host_id = hostID;
+		this->ip = ip;
 	}
-	peer(std::string hostID, boost::asio::ip::udp::endpoint end)
+	peer(std::string ip, boost::asio::ip::udp::endpoint end)
 	{
-		host_id = hostID;
+		this->ip = ip;
 		endpoint = end;
 	}
-	peer(boost::asio::io_service & ios, const std::string hostID)
+	peer(boost::asio::io_service & ios, const std::string ip)
 	{
 		conn = udp_connection_ptr(new udp_connection(ios, 0));
 		udp::resolver resolver(ios);
-		std::string ip = mds->hosts.find(hostID)->second->getPreferredIp();
+		//std::string ip = mds->hosts.find(hostID)->second->getPreferredIp();
+		this->ip = ip;
 		std::string port = std::to_string(MDS_SERVER_PORT);
 		udp::resolver::query query(udp::v4(), ip, port);
 		try {
@@ -95,7 +95,7 @@ protected:
 		// work to do and the client will exit.
 	}
 
-	std::string host_id;
+	std::string ip;
 	udp_connection_ptr conn;
 	boost::asio::ip::udp::endpoint endpoint;
 

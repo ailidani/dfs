@@ -31,7 +31,7 @@ void Syncer::checkRepo(HostInfo &infoSnapshot, const std::string &uuid)
     std::map<std::string, HostInfo *>::iterator it;
     RepoInfo localInfo = infoSnapshot.getRepo(uuid);
 
-    hostSnapshot = mds->hosts;
+    hostSnapshot = MDS::instance().hosts;
 
     for (it = hostSnapshot.begin(); it != hostSnapshot.end(); it++) {
     	std::list<std::string> repos = it->second->listRepos();
@@ -54,7 +54,7 @@ void Syncer::run()
         std::list<std::string> repos;
         std::list<std::string>::iterator it;
 
-        infoSnapshot = mds->myInfo;
+        infoSnapshot = MDS::instance().myInfo;
         repos = infoSnapshot.listRepos();
 
         for (it = repos.begin(); it != repos.end(); it++) {

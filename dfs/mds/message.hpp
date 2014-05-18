@@ -33,17 +33,17 @@ public:
 	CMessage() :
 		m_type(INVALID_TYPE),
 		m_seq(0),
-		m_group(0),
-		m_source(0),
+		m_group(""),
+		m_source(""),
 		m_ResponseType(INVALID_TYPE),
 		m_Response(No),
 		mode_(0)
 		{
 		};
-	CMessage( int p_src ) :
+	CMessage( std::string p_src ) :
 		m_type(INVALID_TYPE),
 		m_seq(0),
-		m_group(0),
+		m_group(""),
 		m_source( p_src ),
 		m_ResponseType(INVALID_TYPE),
 		m_Response(No),
@@ -54,8 +54,8 @@ public:
 
 	EMessageType m_type;
 	int			 m_seq;
-	float		 m_group;
-	int 		 m_source;
+	std::string		m_group; //cluster name
+	std::string		m_source; //ip
 
 	EMessageType m_ResponseType;
 	EAnswerType  m_Response;
@@ -71,14 +71,14 @@ public:
 	//virtual bool operator == ( const CMessage &p_rhs ) const;
 
 protected:
-	CMessage( EMessageType p_type, float p_group, int p_src ) :
+	CMessage( EMessageType p_type, std::string p_group, std::string p_src ) :
 		m_type( p_type ), m_group( p_group), m_source( p_src ), m_Response(No)
 		{ };
 
 	CMessage( EMessageType p_type ) :
 		m_type( p_type ),
 		m_seq(0),
-		m_source(0)
+		m_source("")
 		{
 		};
 
@@ -107,7 +107,7 @@ struct CUpdate : public CMessage
 	CUpdate() :
 		CMessage( Update )
 		{};
-	CUpdate( float p_group, int p_src) :
+	CUpdate( std::string p_group, std::string p_src) :
 		CMessage( Update, p_group, p_src )
 		{ };
 
@@ -125,7 +125,7 @@ struct CRequest : public CMessage
 	CRequest() :
 		CMessage(Request)
 		{};
-	CRequest( float p_group, int p_src) :
+	CRequest( std::string p_group, std::string p_src) :
 		CMessage( Request, p_group, p_src )
 		{};
 
@@ -144,7 +144,7 @@ struct CReady : public CMessage
 public:
 	CReady() :
 		CMessage( Ready ) {};
-	CReady( float p_group, int p_src) :
+	CReady( std::string p_group, std::string p_src) :
 		CMessage( Ready, p_group, p_src )
 		{};
 
@@ -164,7 +164,7 @@ struct CAccept : public CMessage
 public:
 	CAccept() :
 		CMessage( Accept ) {};
-	CAccept( float p_group, int p_src) :
+	CAccept( std::string p_group, std::string p_src) :
 		CMessage( Accept, p_group, p_src )
 		{};
 private:
@@ -182,7 +182,7 @@ public:
 
 	CResponse() :
 		CMessage( Response ) {};
-	CResponse( float p_group, int p_source, EMessageType p_type, EAnswerType p_ans ) :
+	CResponse( std::string p_group, std::string p_source, EMessageType p_type, EAnswerType p_ans ) :
 		CMessage( Response, p_group, p_source )
 		{
 			m_ResponseType = p_type;

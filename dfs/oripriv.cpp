@@ -1609,7 +1609,7 @@ OriPriv::fsck()
 
         try {
             dir = getDir(parentPath);
-        } catch (SystemException e) {
+        } catch (SystemException &e) {
             FUSE_LOG("fsck: %s path encountered an error %s",
                      it->first.c_str(), e.what());
         }
@@ -1627,14 +1627,12 @@ OriPriv::fsck()
     }
 }
 
-LocalRepo *
-OriPriv::getRepo()
+LocalRepo * OriPriv::getRepo()
 {
     return repo;
 }
 
-OriPriv *
-GetOriPriv()
+OriPriv * GetOriPriv()
 {
     return (OriPriv*)fuse_get_context()->private_data;
 }

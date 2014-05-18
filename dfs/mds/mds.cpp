@@ -2,15 +2,13 @@
 #include "mds.h"
 #include "message.hpp"
 #include "server.h"
+#include "../logging.h"
 
+extern OriPriv *priv;
 
 MDS::MDS()
 {
     rc = MDSConf();
-    announcer = new Announcer();
-    listener = new Listener();
-    //repoMonitor = new RepoMonitor();
-    //syncer = new Syncer();
 
     myInfo = HostInfo(rc.getUUID(), rc.getCluster());
     // XXX: Update addresses periodically
@@ -32,7 +30,6 @@ MDS::MDS()
 MDS::~MDS()
 {
 	save();
-    delete server::instance();
 }
 
 void MDS::init()
@@ -43,6 +40,11 @@ void MDS::init()
 	// Chdir so that coredumps are placed in ~/.ori
 	chdir(oriHome.c_str());
 	dfs_open_log(Util_GetHome() + MDS_LOGFILE);
+
+	//std::list<std::string>::const_iterator it;
+	std::cout<<"DEBUG: In MDS::init(), before adding peers"<<std::endl;
+		std::cout<<"Adding peer: "<<rc.getHosts().front()<<std::endl;
+		server::instance().add_peer(rc.getHosts().front());
 
 	start_server();
 }
@@ -66,12 +68,17 @@ int MDS::start_server()
 {
 	MSG("Starting MDS");
 
-    announcer->start();
-    listener->start();
-    //repoMonitor->start();
-    //syncer->start();
-    server::instance()->run();
+	std::cout<<"DEBUG: in MDS::start_server, before server.run()"  <<std::endl;
+    server::instance().start();
 
+    MessagePtr msg1 = boost::shared_ptr<CMessage>(new CMessage());
+    msg1->m_type = Ready;
+    msg1->m_group = myInfo.getHost();
+    msg1->m_source = myInfo.getHost();
+    std::cout<<"DEBUG: before sending message"<<std::endl;
+    server::instance().send_msg(msg1);
+
+    /*
     struct event_base *base = event_base_new();
     struct evhttp *httpd = evhttp_new(base);
     evhttp_bind_socket(httpd, "0.0.0.0", 8051);
@@ -85,13 +92,15 @@ int MDS::start_server()
     event_base_free(base);
 
     // XXX: Wait for worker threads
+    */
 
     return 0;
 }
 
 int MDS::mds_unlink(const std::string &path, bool fromFUSE)
 {
-	OriPriv *priv = GetOriPriv();
+	if(fromFUSE)
+		OriPriv *priv = GetOriPriv();
 
 #ifdef FSCK_A_LOT
 	priv->fsck();
@@ -114,7 +123,7 @@ int MDS::mds_unlink(const std::string &path, bool fromFUSE)
 			// XXX: Support files
 			ASSERT(false);
 		}
-	} catch (SystemException e) {
+	} catch (SystemException &e) {
 		return -e.getErrno();
 	}
 
@@ -136,14 +145,15 @@ int MDS::mds_unlink(const std::string &path, bool fromFUSE)
 		// XXX send request
 		msg->m_type = Request;
 	}
-	server::instance()->send_msg(msg);
+	server::instance().send_msg(msg);
 
 	return 0;
 }
 
 int MDS::mds_symlink(const std::string &target_path, const std::string &link_path, bool fromFUSE)
 {
-	OriPriv *priv = GetOriPriv();
+	if(fromFUSE)
+		OriPriv *priv = GetOriPriv();
 	OriDir *parentDir;
 	std::string parentPath;
 
@@ -158,7 +168,7 @@ int MDS::mds_symlink(const std::string &target_path, const std::string &link_pat
 	RWKey::sp lock = priv->nsLock.writeLock();
 	try {
 		parentDir = priv->getDir(parentPath);
-	} catch (SystemException e) {
+	} catch (SystemException &e) {
 		return -e.getErrno();
 	}
 
@@ -187,7 +197,7 @@ int MDS::mds_symlink(const std::string &target_path, const std::string &link_pat
 		// XXX send request
 		msg->m_type = Request;
 	}
-	server::instance()->send_msg(msg);
+	server::instance().send_msg(msg);
 
 	return 0;
 }
@@ -204,7 +214,7 @@ int MDS::mds_readlink(const std::string &path, char* buf, size_t size)
 	RWKey::sp lock = priv->nsLock.readLock();
 	try {
 		info = priv->getFileInfo(path);
-	} catch (SystemException e) {
+	} catch (SystemException &e) {
 		return -e.getErrno();
 	}
 
@@ -215,7 +225,8 @@ int MDS::mds_readlink(const std::string &path, char* buf, size_t size)
 
 int MDS::mds_rename(const std::string &from_path, const std::string &to_path, bool fromFUSE)
 {
-    OriPriv *priv = GetOriPriv();
+	if(fromFUSE)
+		OriPriv *priv = GetOriPriv();
 
 #ifdef FSCK_A_LOT
     priv->fsck();
@@ -278,14 +289,15 @@ int MDS::mds_rename(const std::string &from_path, const std::string &to_path, bo
     	// XXX send request
     	msg->m_type = Request;
     }
-    server::instance()->send_msg(msg);
+    server::instance().send_msg(msg);
 
     return 0;
 }
 
 int MDS::mds_mkdir(const std::string &path, mode_t mode, bool fromFUSE)
 {
-    OriPriv *priv = GetOriPriv();
+	if(fromFUSE)
+		OriPriv *priv = GetOriPriv();
     std::cout<<"DEBUG: Made it after GetOriPriv()"<<std::endl;
 
 #ifdef FSCK_A_LOT
@@ -299,7 +311,7 @@ int MDS::mds_mkdir(const std::string &path, mode_t mode, bool fromFUSE)
         std::cout<<"DEBUG: Made it after priv->addDir()"<<std::endl;
         info->statInfo.st_mode |= mode;
         std::cout<<"DEBUG: Made it after info mode|="<<std::endl;
-    } catch (SystemException e) {
+    } catch (SystemException &e) {
         return -e.getErrno();
     }
 
@@ -314,14 +326,15 @@ int MDS::mds_mkdir(const std::string &path, mode_t mode, bool fromFUSE)
 	msg->path_from_ = path;
 	msg->mode_ = mode;
 	msg->m_type = Update;
-	server::instance()->send_msg(msg);
+	server::instance().send_msg(msg);
 
     return 0;
 }
 
 int MDS::mds_rmdir(const std::string &path, bool fromFUSE)
 {
-    OriPriv *priv = GetOriPriv();
+	if(fromFUSE)
+		OriPriv *priv = GetOriPriv();
 
 #ifdef FSCK_A_LOT
     priv->fsck();
@@ -367,7 +380,7 @@ int MDS::mds_rmdir(const std::string &path, bool fromFUSE)
     	// XXX send request
     	msg->m_type = Request;
     }
-    server::instance()->send_msg(msg);
+    server::instance().send_msg(msg);
 
     return 0;
 }

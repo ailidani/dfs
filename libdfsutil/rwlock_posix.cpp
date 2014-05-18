@@ -17,7 +17,7 @@
 #define LOG_LOCKING 0
 
 #ifdef DEBUG
-#define CHECK_LOCK_ORDER 1
+#define CHECK_LOCK_ORDER 0
 #else
 #define CHECK_LOCK_ORDER 0
 #endif

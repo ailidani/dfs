@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <set>
+#include <libdfsutil/thread.h>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/shared_ptr.hpp>
@@ -22,17 +23,14 @@
 using boost::asio::ip::udp;
 
 
-class server : public peer
+class server : public peer, public Thread
 {
 public:
 	static boost::asio::io_service io_service;
 	~server() {};
-	static server* instance()
+	static server& instance()
 	{
-		if(server_ == 0)
-		{
-			server_ = new server();
-		}
+		static server server_;
 		return server_;
 	}
 	void run();
@@ -42,16 +40,18 @@ public:
 	void handle_message( const boost::system::error_code& err );
 	void process_message(MessagePtr message);
 	void send_msg(MessagePtr msg);
-	void add_peer(const std::string & hostID);
+	void add_peer(const std::string ip);
 
 protected:
-	server();
 	PeerSet peers;
 	std::vector<MessagePtr> messages;
 	boost::asio::ip::udp::endpoint RemoteEndpoint;
 
 private:
-	static server* server_;
+	//static server* server_;
+	server();
+	server(server const & copy);				// Not Implemented
+	server & operator=(server const & copy);	// Not Implemented
 };
 
 //typedef boost::shared_ptr<server> server_ptr;

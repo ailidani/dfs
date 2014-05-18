@@ -57,7 +57,6 @@ using namespace std;
 mount_ori_config config;
 RemoteRepo remoteRepo;
 OriPriv *priv;
-MDS* mds;
 
 // Mount/Unmount
 
@@ -71,7 +70,7 @@ static void* ori_init(struct fuse_conn_info *conn)
     priv->init();
 
     FUSE_LOG("Metadata Service starting ...");
-    mds->init();
+    MDS::instance().init();
 
     return priv;
 }
@@ -84,8 +83,6 @@ static void ori_destroy(void *userdata)
     priv->commit(c);
     priv->cleanup();
     delete priv;
-
-    delete mds;
 
     FUSE_LOG("File system unmounted");
 }
@@ -108,7 +105,7 @@ static int ori_unlink(const char *path)
 		return -EACCES;
 	}
 
-    return mds->mds_unlink(path, true);
+    return MDS::instance().mds_unlink(path, true);
 }
 
 static int ori_symlink(const char *target_path, const char *link_path)
@@ -123,14 +120,14 @@ static int ori_symlink(const char *target_path, const char *link_path)
 
     FUSE_LOG("FUSE ori_symlink(path=\"%s\")", link_path);
 
-    return mds->mds_symlink(target_path, link_path, true);
+    return MDS::instance().mds_symlink(target_path, link_path, true);
 }
 
 static int ori_readlink(const char *path, char *buf, size_t size)
 {
     FUSE_LOG("FUSE ori_readlink(path\"%s\", size=%ld)", path, size);
 
-    return mds->mds_readlink(path, buf, size);
+    return MDS::instance().mds_readlink(path, buf, size);
 }
 
 static int ori_rename(const char *from_path, const char *to_path)
@@ -149,7 +146,7 @@ static int ori_rename(const char *from_path, const char *to_path)
         return -EACCES;
     }
 
-    return mds->mds_rename(from_path, to_path, true);
+    return MDS::instance().mds_rename(from_path, to_path, true);
 }
 
 // File IO
@@ -179,7 +176,7 @@ static int ori_create(const char *path, mode_t mode, struct fuse_file_info *fi)
     RWKey::sp lock = priv->nsLock.writeLock();
     try {
         parentDir = priv->getDir(parentPath);
-    } catch (SystemException e) {
+    } catch (SystemException &e) {
         return -e.getErrno();
     }
 
@@ -470,7 +467,7 @@ ori_mkdir(const char *path, mode_t mode)
         return -EACCES;
     }
 
-    return mds->mds_mkdir(path, mode, true);
+    return MDS::instance().mds_mkdir(path, mode, true);
 }
 
 static int
@@ -484,7 +481,7 @@ ori_rmdir(const char *path)
         return -EACCES;
     }
 
-    return mds->mds_rmdir(path, true);
+    return MDS::instance().mds_rmdir(path, true);
 }
 
 static int
@@ -1094,7 +1091,7 @@ int main(int argc, char *argv[])
     strncpy(fuse_mntpt, config.mountPoint.c_str(), 512);
 
     // disable threading temporarily
-    //config.single = 1;
+    config.single = 1;
     if (config.single == 1)
     {
         fuse_argv[fuse_argc] = fuse_single;
@@ -1110,7 +1107,6 @@ int main(int argc, char *argv[])
     fuse_argv[fuse_argc] = fuse_mntpt;
     fuse_argc++;
 
-    mds = new MDS();
 
     int status = fuse_main(fuse_argc, fuse_argv, &ori_oper, NULL);
     if (status != 0) {

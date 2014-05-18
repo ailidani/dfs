@@ -60,16 +60,13 @@
 #include "repoinfo.h"
 #include "hostinfo.h"
 #include "repocontrol.h"
-#include "announcer.h"
-#include "listener.h"
-#include "repomonitor.h"
-#include "syncer.h"
 
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/serialization/set.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/map.hpp>
+#include <boost/serialization/singleton.hpp>
 
 // Announcement UDP port
 #define MDS_UDPPORT         5001
@@ -91,6 +88,7 @@
 class MDS
 {
 public:
+	//friend class boost::serialization::singleton<MDS>;
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int version)
@@ -98,16 +96,13 @@ public:
 		ar & mypaths;
 		ar & masters;
 	}
-	/*
-	static MDS* instance()
+
+	static MDS& instance()
 	{
-		if(mds == 0)
-			mds = new MDS;
+		static MDS mds;
 		return mds;
 	}
-	*/
-	MDS();
-	~MDS();
+
 	void init();
 	int start_server();
 
@@ -143,12 +138,10 @@ protected:
 	}
 
 private:
-	//static MDS* mds;
-
-	Announcer *announcer;
-	Listener *listener;
-	//RepoMonitor *repoMonitor;
-	//Syncer *syncer;
+	MDS();
+	MDS(MDS const & copy);				// Not Implemented
+	MDS & operator=(MDS const & copy);	// Not Implemented
+	~MDS();
 
 	std::set<std::string> mypaths;
 	typedef std::map<std::string, HostInfo *> MasterMap;
